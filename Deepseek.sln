@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36414.22 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deepseek", "Deepseek\Deepseek.csproj", "{D14EEF78-420D-4FDC-B365-70B3A5986669}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deepseek", "Deepseek\Deepseek.csproj", "{3958EF2E-CF6B-4E4D-A5AE-6F3D6F4C1D75}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{D14EEF78-420D-4FDC-B365-70B3A5986669}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D14EEF78-420D-4FDC-B365-70B3A5986669}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D14EEF78-420D-4FDC-B365-70B3A5986669}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D14EEF78-420D-4FDC-B365-70B3A5986669}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3958EF2E-CF6B-4E4D-A5AE-6F3D6F4C1D75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3958EF2E-CF6B-4E4D-A5AE-6F3D6F4C1D75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3958EF2E-CF6B-4E4D-A5AE-6F3D6F4C1D75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3958EF2E-CF6B-4E4D-A5AE-6F3D6F4C1D75}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {5F791605-22F5-4BE4-B04F-62AF4E7CA302}
+		SolutionGuid = {A9299C1E-1C13-439E-9A27-E352C39104AF}
 	EndGlobalSection
 EndGlobal

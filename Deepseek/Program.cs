@@ -1,11 +1,11 @@
 ﻿using System;
+using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using System.IO;
 
-class OllamaDeepSeekClient
+internal class OllamaDeepSeekClient
 {
     private readonly HttpClient _httpClient;
     private const string OllamaApiUrl = "http://localhost:11434/api/generate";
@@ -119,7 +119,7 @@ class OllamaDeepSeekClient
     }
 }
 
-class Program
+internal class Program
 {
     static async Task Main(string[] args)
     {
