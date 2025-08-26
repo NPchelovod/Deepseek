@@ -187,7 +187,4 @@ namespace OllamaChat
     }
 
 
-
-
-    
 }
