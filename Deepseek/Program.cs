@@ -15,43 +15,30 @@ internal class OllamaDeepSeekClient
         _httpClient = new HttpClient();
     }
 
-    public async Task<string> GenerateTextAsync(string prompt)
+    private async Task<string> GenerateTextAsync(string prompt)
     {
-        try
+        var requestData = new
         {
-            var requestData = new
-            {
-                model = "deepseek-r1:1.5b",
-                prompt = prompt,
-                temperature = 0.7,
-                max_tokens = 150,
-                stream = false // Явно отключаем потоковый режим
-            };
+            model = "deepseek-r1:1.5b",
+            prompt = prompt,
+            temperature = 0.7,
+            max_tokens = 150,
+            stream = false
+        };
 
-            var json = JsonSerializer.Serialize(requestData);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var json = JsonSerializer.Serialize(requestData);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync(OllamaApiUrl, content);
-            response.EnsureSuccessStatusCode();
+        var response = await _httpClient.PostAsync(OllamaApiUrl, content);
+        response.EnsureSuccessStatusCode();
 
-            // Читаем ответ как строку
-            var responseString = await response.Content.ReadAsStringAsync();
+        var responseString = await response.Content.ReadAsStringAsync();
+        using JsonDocument document = JsonDocument.Parse(responseString);
+        JsonElement root = document.RootElement;
 
-            // Парсим JSON
-            using JsonDocument document = JsonDocument.Parse(responseString);
-            JsonElement root = document.RootElement;
-
-            if (root.TryGetProperty("response", out JsonElement responseProperty))
-            {
-                return responseProperty.GetString();
-            }
-
-            return "No response generated";
-        }
-        catch (Exception ex)
-        {
-            return $"Error: {ex.Message}";
-        }
+        return root.TryGetProperty("response", out JsonElement responseProperty)
+            ? responseProperty.GetString()
+            : "No response generated";
     }
 
     // Альтернативный метод с потоковой обработкой
