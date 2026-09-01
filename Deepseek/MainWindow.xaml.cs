@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Text;
@@ -7,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using Microsoft.Win32; // Для OpenFileDialog
 
 namespace OllamaChat
 {
@@ -14,14 +16,17 @@ namespace OllamaChat
     {
         private readonly HttpClient _httpClient;
         private const string OllamaApiUrl = "http://localhost:11434/api/generate";
-        private List<string> _conversationHistory = new List<string>(); // Хранение истории диалога
+        private List<string> _conversationHistory = new List<string>(); // История диалога
+        private string _contextFromFiles = string.Empty; // Текст из загруженных .txt файлов
 
         public MainWindow()
         {
             InitializeComponent();
             _httpClient = new HttpClient();
-            // Оставляем чат пустым при запуске
+            // Чат пуст при запуске
         }
+
+        // ==================== ОБРАБОТЧИКИ СОБЫТИЙ ====================
 
         private async void SendButton_Click(object sender, RoutedEventArgs e)
         {
@@ -37,6 +42,38 @@ namespace OllamaChat
             }
         }
 
+        // Метод для кнопки загрузки файлов (добавьте кнопку в XAML и привяжите этот обработчик)
+        private void LoadFilesButton_Click(object sender, RoutedEventArgs e)
+        {
+            var openFileDialog = new OpenFileDialog
+            {
+                Multiselect = true,
+                Filter = "Текстовые файлы (*.txt)|*.txt|Все файлы (*.*)|*.*",
+                Title = "Выберите текстовые файлы с предысторией"
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                var sb = new StringBuilder();
+                foreach (string filePath in openFileDialog.FileNames)
+                {
+                    try
+                    {
+                        sb.AppendLine(File.ReadAllText(filePath));
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Ошибка чтения файла {filePath}: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                _contextFromFiles = sb.ToString();
+                // Опционально: показать пользователю, что файлы загружены
+                // StatusText.Text = $"Загружено файлов: {openFileDialog.FileNames.Length}";
+            }
+        }
+
+        // ==================== ЛОГИКА ОТПРАВКИ СООБЩЕНИЙ ====================
+
         private async Task SendMessage()
         {
             string prompt = InputBox.Text.Trim();
@@ -51,15 +88,20 @@ namespace OllamaChat
 
             try
             {
-                // Формируем промпт с историей диалога
+                // Формируем полный промпт (контекст из файлов + история диалога)
                 string fullPrompt = BuildPromptWithHistory();
                 string response = await GenerateTextStreamAsync(fullPrompt);
 
                 // Добавляем ответ ИИ в историю
                 _conversationHistory.Add($"AI: {response}");
 
-                // Отображаем ответ ИИ
-                AddMessage("AI: ", response);
+                // Ответ уже выведен потоково в GenerateTextStreamAsync,
+                // добавляем только перевод строки для визуального разделения
+                Dispatcher.Invoke(() =>
+                {
+                    ChatBox.AppendText("\n");
+                    ChatBox.ScrollToEnd();
+                });
             }
             catch (Exception ex)
             {
@@ -69,34 +111,48 @@ namespace OllamaChat
 
         private string BuildPromptWithHistory()
         {
-            // Объединяем историю диалога в один промпт
-            StringBuilder promptBuilder = new StringBuilder();
+            var promptBuilder = new StringBuilder();
 
-            // Ограничиваем историю последними 10 сообщениями (5 пар вопрос-ответ)
+            // 1. Системная инструкция (если нужно)
+            promptBuilder.AppendLine("Ты — полезный ассистент. Используй предоставленный контекст для ответа на вопросы.");
+
+            // 2. Контекст из загруженных файлов (если есть)
+            if (!string.IsNullOrWhiteSpace(_contextFromFiles))
+            {
+                // Ограничиваем размер контекста, чтобы не превысить лимиты модели (например, последние 5000 символов)
+                string context = _contextFromFiles.Length > 5000
+                    ? _contextFromFiles.Substring(_contextFromFiles.Length - 5000)
+                    : _contextFromFiles;
+
+                promptBuilder.AppendLine("=== КОНТЕКСТ ИЗ ФАЙЛОВ ===");
+                promptBuilder.AppendLine(context);
+                promptBuilder.AppendLine("=== КОНЕЦ КОНТЕКСТА ===\n");
+            }
+
+            // 3. История диалога (последние 10 сообщений)
             int startIndex = Math.Max(0, _conversationHistory.Count - 10);
-
             for (int i = startIndex; i < _conversationHistory.Count; i++)
             {
                 promptBuilder.AppendLine(_conversationHistory[i]);
             }
 
-            // Добавляем текущий промпт
-            promptBuilder.AppendLine("AI: ");
+            // 4. Маркер для ответа ИИ
+            promptBuilder.Append("AI: ");
 
             return promptBuilder.ToString();
         }
 
         private void AddMessage(string sender, string message)
         {
-            // Очищаем сообщение от тегов <think>
+            // Очищаем сообщение от тегов <think> и служебных префиксов
             string cleanedMessage = Regex.Replace(message, @"<think>.*?</think>", "", RegexOptions.Singleline);
-
-            // Удаляем другие служебные сообщения
             cleanedMessage = cleanedMessage.Replace("AI:", "").Replace("Вы:", "").Trim();
 
             ChatBox.AppendText($"{sender}{cleanedMessage}\n\n");
             ChatBox.ScrollToEnd();
         }
+
+        // ==================== ГЕНЕРАЦИЯ ОТВЕТА (ПОТОКОВАЯ) ====================
 
         private async Task<string> GenerateTextStreamAsync(string prompt)
         {
@@ -107,7 +163,7 @@ namespace OllamaChat
             {
                 var requestData = new
                 {
-                    model = "deepseek-r1:1.5b",
+                    model = " gemma2:9b",//"qwen2.5:32b-instruct-q4_K_M",//"deepseek-r1:8b",
                     prompt = prompt,
                     temperature = 0.7,
                     max_tokens = 150,
@@ -120,7 +176,7 @@ namespace OllamaChat
                 var response = await _httpClient.PostAsync(OllamaApiUrl, content);
                 response.EnsureSuccessStatusCode();
 
-                using (var streamReader = new System.IO.StreamReader(await response.Content.ReadAsStreamAsync()))
+                using (var streamReader = new StreamReader(await response.Content.ReadAsStreamAsync()))
                 {
                     string line;
                     while ((line = await streamReader.ReadLineAsync()) != null)
@@ -152,13 +208,13 @@ namespace OllamaChat
                                         continue; // Пропускаем содержимое внутри тегов
                                     }
 
-                                    // Пропускаем другие служебные сообщения
+                                    // Пропускаем служебные префиксы, если модель их повторяет
                                     if (token.StartsWith("AI:") || token.StartsWith("Вы:"))
                                         continue;
 
                                     fullResponse.Append(token);
 
-                                    // Обновляем UI по мере поступления токенов
+                                    // Выводим токен в реальном времени
                                     Dispatcher.Invoke(() =>
                                     {
                                         ChatBox.AppendText(token);
@@ -185,6 +241,4 @@ namespace OllamaChat
             }
         }
     }
-
-
 }
