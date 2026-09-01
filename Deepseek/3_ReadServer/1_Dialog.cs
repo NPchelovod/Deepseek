@@ -6,6 +6,15 @@ using System.Threading.Tasks;
 
 namespace Deepseek
 {
+
+    public class ChatData
+    {
+
+    }
+
+
+
+
     public class ChatMessage
     {
         public string Role { get; set; } // "user" или "assistant"

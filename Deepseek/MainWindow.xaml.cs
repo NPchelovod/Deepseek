@@ -20,7 +20,10 @@ namespace OllamaChat
         private const string OllamaApiUrl = "http://localhost:11434/api/generate";
         private List<string> _conversationHistory = new List<string>(); // История диалога
         private string _contextFromFiles = string.Empty; // Текст из загруженных .txt файлов
+
         private bool _useCommonContext = false; // по умолчанию контекст не используется
+        private bool _isAdminCheckBox_Changed = false; // по умолчанию контекст не используется
+
         private FileRequestProcessor fileProcessor;
         public MainWindow()
         {
