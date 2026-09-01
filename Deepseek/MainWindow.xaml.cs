@@ -25,12 +25,12 @@ namespace OllamaChat
         {
             InitializeComponent();
             _httpClient = new HttpClient();
-            chatData = new ChatData();
+            
             mainWindow=this;
             Initalize();
 
         }
-        public ChatData chatData;
+        public ChatData chatData=new ChatData();
 
         public void Initalize()
         {
@@ -58,7 +58,7 @@ namespace OllamaChat
         private void MaxTokensTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (_suppressMaxTokensTextChanged) return;
-
+            if(chatData==null) return;
             if (int.TryParse(MaxTokensTextBox.Text, out int value) && value > 0)
             {
                 chatData.SimvolsMax = value;
@@ -75,8 +75,8 @@ namespace OllamaChat
         // Обработчик выбора модели в ComboBox
         private void ModelComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (ModelComboBox.SelectedItem is ComboBoxItem selectedItem)
-            {
+            if(chatData != null && ModelComboBox.SelectedItem is ComboBoxItem selectedItem)
+             {
                 chatData.ModelII = selectedItem.Content.ToString();
             }
         }

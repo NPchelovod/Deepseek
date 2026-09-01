@@ -51,9 +51,9 @@
                     <ComboBox x:Name="ModelComboBox" MinWidth="150" Margin="0,2,0,2" 
                               VerticalAlignment="Center" 
                               SelectionChanged="ModelComboBox_SelectionChanged">
-                        <ComboBoxItem Content="llama3.1" IsSelected="True"/>
-                        <ComboBoxItem Content="mistral"/>
-                        <ComboBoxItem Content="gemma3"/>
+                        <ComboBoxItem Content="qwen2.5:7b-instruct-q4_K_M" IsSelected="True"/>
+                        <ComboBoxItem Content="deepseek-r1:8b"/>
+                        <ComboBoxItem Content="qwen2.5:32b-instruct-q4_K_M"/>
                     </ComboBox>
                 </StackPanel>
 

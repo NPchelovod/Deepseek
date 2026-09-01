@@ -28,9 +28,9 @@ namespace Deepseek
         public string promptFolder = @"Y:\ИИ\_БазаДанных"; // можно указать начальную папку
         public DateTime Timestamp { get; set; }
 
-        public readonly string inboxPath = @"Y:\ИИ\_Вопросы";
-        public readonly string outboxPath = @"Y:\ИИ\_Ответы";
-        public readonly string archivePath = @"Y:\ИИ\_Архив"; // для обработанных запросов (опционально)
+        public readonly string inboxPath = @"Y:\ИИ\_Разработчику\_Вопросы";
+        public readonly string outboxPath = @"Y:\ИИ\_Разработчику\_Ответы";
+        public readonly string archivePath = @"Y:\ИИ\_Разработчику\_Архив"; // для обработанных запросов (опционально)
 
 
         
