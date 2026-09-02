@@ -52,11 +52,48 @@
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Grid.Column="0">
                     <TextBlock Text="Модель ИИ:" VerticalAlignment="Center" Margin="0,0,8,0"/>
                     <ComboBox x:Name="ModelComboBox" MinWidth="150" Margin="0,2,0,2" 
-                              VerticalAlignment="Center" 
-                              SelectionChanged="ModelComboBox_SelectionChanged">
-                        <ComboBoxItem Content="qwen2.5:7b-instruct-q4_K_M" IsSelected="True"/>
-                        <ComboBoxItem Content="deepseek-r1:8b"/>
-                        <ComboBoxItem Content="qwen2.5:32b-instruct-q4_K_M"/>
+              VerticalAlignment="Center" 
+              SelectionChanged="ModelComboBox_SelectionChanged"
+              ToolTip="Выберите модель. Наведите курсор на пункт для подробностей.">
+                        <ComboBoxItem Content="qwen2.5:7b-instruct-q4_K_M" IsSelected="True">
+                            <ComboBoxItem.ToolTip>
+                                <TextBlock>
+                    <Bold>Быстрая и сбалансированная</Bold><LineBreak/>
+                    Хорошее качество ответов, оптимизирована для диалога.<LineBreak/>
+                    Рекомендуется для повседневного использования.
+                                </TextBlock>
+                            </ComboBoxItem.ToolTip>
+                        </ComboBoxItem>
+
+                        <ComboBoxItem Content="deepseek-r1:8b">
+                            <ComboBoxItem.ToolTip>
+                                <TextBlock>
+                    <Bold>Средняя скорость</Bold><LineBreak/>
+                    Хорошее качество, но может работать медленнее.<LineBreak/>
+                    Подходит для сложных запросов.
+                                </TextBlock>
+                            </ComboBoxItem.ToolTip>
+                        </ComboBoxItem>
+
+                        <ComboBoxItem Content="qwen2.5:32b-instruct-q4_K_M">
+                            <ComboBoxItem.ToolTip>
+                                <TextBlock>
+                    <Bold>Очень высокое качество</Bold><LineBreak/>
+                    Требует много ресурсов и времени.<LineBreak/>
+                    Используйте только на мощном ПК для сложных задач.
+                                </TextBlock>
+                            </ComboBoxItem.ToolTip>
+                        </ComboBoxItem>
+
+                        <ComboBoxItem Content="deepseek-r1:1.5b">
+                            <ComboBoxItem.ToolTip>
+                                <TextBlock>
+                    <Bold>Максимальная скорость</Bold><LineBreak/>
+                    Низкое качество, но отвечает мгновенно.<LineBreak/>
+                    Подходит для простых вопросов и быстрых ответов.
+                                </TextBlock>
+                            </ComboBoxItem.ToolTip>
+                        </ComboBoxItem>
                     </ComboBox>
                 </StackPanel>
 
@@ -66,7 +103,7 @@
                     <TextBox x:Name="MaxTokensTextBox"
                              Width="80"
                              VerticalAlignment="Center"
-                             Text="100000"
+                             Text="4000"
                              TextAlignment="Right"
                              TextChanged="MaxTokensTextBox_TextChanged"/>
                 </StackPanel>

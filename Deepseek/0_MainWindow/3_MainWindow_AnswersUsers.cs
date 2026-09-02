@@ -79,13 +79,13 @@ namespace OllamaChat
                         AddMessage($"AI_{incomingChatData.Id}: ", cleanMessage, incomingChatData);
                         // Альтернатива: ChatBox.AppendText(aiMessage + "\n\n");
                     });
-
+                    chatData.ConversationHistory.Add(aiMessage);
                     // Шаг 6: Обновляем локальную историю пользователя,
                     // чтобы следующий вопрос учитывал этот ответ
-                    if (!chatData.ConversationHistory.Contains(aiMessage))
-                    {
-                        chatData.ConversationHistory.Add(aiMessage);
-                    }
+                    //if (!chatData.ConversationHistory.Contains(aiMessage))
+                    //{
+                    //    chatData.ConversationHistory.Add(aiMessage);
+                    //}
                 }
 
                 chatData.ChangeId();//меняем id 
@@ -93,7 +93,7 @@ namespace OllamaChat
 
                 //сохраняем в историю для повторного запуска
                 SaveFile();
-
+                DeleteAllMessage(chatData.outboxPath);
                 File.Delete(filePath);
             }
             catch (Exception ex)

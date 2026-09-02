@@ -85,6 +85,11 @@ namespace OllamaChat
         private void UseContextCheckBox_Changed(object sender, RoutedEventArgs e)
         {
             chatData.UseCommonContext = UseContextCheckBox.IsChecked == true;
+            
+            // готовим контекст
+            GetContextFileData();
+           
+
         }
         private void IsAdminCheckBox_Changed(object sender, RoutedEventArgs e)
         {
@@ -147,7 +152,8 @@ namespace OllamaChat
                     prompt = prompt,
                     temperature = 0.7,
                     max_tokens = outChatData.SimvolsMax,
-                    stream = true
+                    stream = true,
+                    keep_alive = "10h"   // или "24h", "-1" для постоянного удержания
                 };
 
                 var json = JsonSerializer.Serialize(requestData);
@@ -195,11 +201,11 @@ namespace OllamaChat
                                     fullResponse.Append(token);
 
                                     // Выводим токен в реальном времени
-                                    Dispatcher.Invoke(() =>
-                                    {
-                                        ChatBox.AppendText(token);
-                                        ChatBox.ScrollToEnd();
-                                    });
+                                    //Dispatcher.Invoke(() =>
+                                    //{
+                                    //    ChatBox.AppendText(token);
+                                    //    ChatBox.ScrollToEnd();
+                                    //});
                                 }
 
                                 if (root.TryGetProperty("done", out JsonElement doneProperty) &&

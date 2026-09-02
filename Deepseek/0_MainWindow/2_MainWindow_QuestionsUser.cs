@@ -42,9 +42,11 @@ namespace OllamaChat
 
             if (dialog.ShowDialog() == true)
             {
+               
                 string folderPath = dialog.FolderName;
                 if (Directory.Exists(folderPath))
                 {
+                    UseContextCheckBox.IsChecked = true;
                     chatData.promptFolder = folderPath;
                 }
             }
@@ -87,8 +89,8 @@ namespace OllamaChat
             string prompt = InputBox.Text.Trim();
             if (string.IsNullOrEmpty(prompt)) return;
 
-            // Добавляем сообщение пользователя в историю
-            GetContextFileData();
+            
+
             // Добавляем сообщение пользователя в историю
             chatData.ConversationHistory.Add($"User: {prompt}");
 
