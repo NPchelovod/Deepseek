@@ -94,7 +94,7 @@ namespace OllamaChat
         private async Task<string> BuildPromptWithHistory(ChatData outChatData)
         {
             var promptBuilder = new StringBuilder();
-
+            outChatData.PromptVectorAnswer = "";// на всякий случай
             if (outChatData.ConversationHistory.Count == 0)
             { 
                 return promptBuilder.ToString();
@@ -123,6 +123,10 @@ namespace OllamaChat
                     context = context.Length > maxContextLength
                         ? context.Substring(0, maxContextLength)
                         : context;
+                }
+                else
+                {
+                    outChatData.PromptVectorAnswer = context;
                 }
                 promptBuilder.AppendLine("=== КОНТЕКСТ ИЗ ФАЙЛОВ ===");
                 promptBuilder.AppendLine(context);

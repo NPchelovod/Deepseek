@@ -19,11 +19,11 @@ namespace OllamaChat
     public partial class MainWindow
     {
         //Метод для получения эмбеддингов
-        public async Task<float[]> GetEmbeddingAsync(string text)
+        public async Task<float[]> GetEmbeddingAsync(string text, ChatData outChatData)
         {
             var requestData = new
             {
-                model = chatData.EmbeddingModel,
+                model = outChatData.EmbeddingModel,
                 input = text
                 //prompt = text
             };
@@ -81,8 +81,9 @@ namespace OllamaChat
         }
         // Поиск похожих чанков
 
-        private async Task<List<string>> SearchRelevantChunksAsync(string query, ChatData outChatData, int topK = 3)
+        private async Task<List<string>> SearchRelevantChunksAsync(string query, ChatData outChatData)
         {
+            int topK = outChatData.topK;
             ChankData cd = await ChankData.GetChankData(mainWindow, chatData);
 
             List < (string Text, string Folder, float[] Embedding)> chunks = await cd.GetChanks(mainWindow, chatData);
@@ -93,7 +94,7 @@ namespace OllamaChat
                 return new List<string>();
             }
             //это вектор вопроса
-            var queryEmbedding = await GetEmbeddingAsync(query);
+            var queryEmbedding = await GetEmbeddingAsync(query, outChatData);
             var similarities = new List<(float Score, string Text)>();
 
             

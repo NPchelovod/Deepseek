@@ -37,7 +37,7 @@ namespace OllamaChat
             var dialog = new Microsoft.Win32.OpenFolderDialog
             {
                 Title = "Выберите папку с документами",
-                InitialDirectory = chatData.promptFolder // можно указать начальную папку
+                InitialDirectory = Directory.Exists( chatData.promptFolder)? chatData.promptFolder:"" // можно указать начальную папку
             };
 
             if (dialog.ShowDialog() == true)
@@ -71,7 +71,7 @@ namespace OllamaChat
                         sb.AppendLine(file.Text);
                         sb.AppendLine();
                     }
-                    UseContextCheckBox.IsChecked = true;
+                    //UseContextCheckBox.IsChecked = true;
                     return sb.ToString();
                     /*MessageBox.Show($"Загружено {extracted.Count} файлов.", "Готово", MessageBoxButton.OK, *///MessageBoxImage.Information);
 

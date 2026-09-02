@@ -107,28 +107,33 @@ namespace OllamaChat
                 //отписка если была на папки и тд
             }
         }
-
-
-
-
-
-
-
-
-
-        
+        private async void ViewContextButton_Click(object sender, RoutedEventArgs e)
+        {
+            // открытие SettingsWindow.
+            var sW = new ContextWindow(this);
+            sW.Show();
+        }
        
-        
 
-        
+
+
+
+
+
+
+
+
+
+
+
 
         //тут мы получаем и отвечаем на вопросы все польхователей
-        
-        
 
 
 
-        
+
+
+
         private void AddMessage(string sender, string message, ChatData chatData)
         {
             // Очищаем сообщение от тегов <think> и служебных префиксов

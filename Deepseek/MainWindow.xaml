@@ -17,13 +17,18 @@
 
         <!-- Панель ввода (основная) -->
         <DockPanel Grid.Row="1" Margin="5">
-            <CheckBox x:Name="UseContextCheckBox" Content="Использовать контекст" 
+            <CheckBox x:Name="UseContextCheckBox" Content="Использовать Базу Знаний" 
                       DockPanel.Dock="Left" VerticalAlignment="Center" 
                       Checked="UseContextCheckBox_Changed" Unchecked="UseContextCheckBox_Changed"
                       Margin="0,0,10,0"/>
 
             <Button Content="Загрузить папку" DockPanel.Dock="Left" 
                     Click="LoadFolderButton_Click" Margin="0,0,5,0" Padding="5"/>
+
+            <!-- Новая кнопка: Просмотр контекста -->
+            <Button Content="Просмотр контекста" DockPanel.Dock="Left"
+                    Click="ViewContextButton_Click" Margin="0,0,5,0" Padding="5"
+                    ToolTip="Показать текущий контекст, который будет отправлен модели"/>
 
             <Button Content="Очистить историю" DockPanel.Dock="Left" 
                     Click="ClearHistoryButton_Click" Margin="0,0,5,0" Padding="5"/>
@@ -52,15 +57,15 @@
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Grid.Column="0">
                     <TextBlock Text="Модель ИИ:" VerticalAlignment="Center" Margin="0,0,8,0"/>
                     <ComboBox x:Name="ModelComboBox" MinWidth="150" Margin="0,2,0,2" 
-              VerticalAlignment="Center" 
-              SelectionChanged="ModelComboBox_SelectionChanged"
-              ToolTip="Выберите модель. Наведите курсор на пункт для подробностей.">
+                              VerticalAlignment="Center" 
+                              SelectionChanged="ModelComboBox_SelectionChanged"
+                              ToolTip="Выберите модель. Наведите курсор на пункт для подробностей.">
                         <ComboBoxItem Content="qwen2.5:7b-instruct-q4_K_M" IsSelected="True">
                             <ComboBoxItem.ToolTip>
                                 <TextBlock>
-                    <Bold>Быстрая и сбалансированная</Bold><LineBreak/>
-                    Хорошее качество ответов, оптимизирована для диалога.<LineBreak/>
-                    Рекомендуется для повседневного использования.
+                                    <Bold>Быстрая и сбалансированная</Bold><LineBreak/>
+                                    Хорошее качество ответов, оптимизирована для диалога.<LineBreak/>
+                                    Рекомендуется для повседневного использования.
                                 </TextBlock>
                             </ComboBoxItem.ToolTip>
                         </ComboBoxItem>
@@ -68,9 +73,9 @@
                         <ComboBoxItem Content="deepseek-r1:8b">
                             <ComboBoxItem.ToolTip>
                                 <TextBlock>
-                    <Bold>Средняя скорость</Bold><LineBreak/>
-                    Хорошее качество, но может работать медленнее.<LineBreak/>
-                    Подходит для сложных запросов.
+                                    <Bold>Средняя скорость</Bold><LineBreak/>
+                                    Хорошее качество, но может работать медленнее.<LineBreak/>
+                                    Подходит для сложных запросов.
                                 </TextBlock>
                             </ComboBoxItem.ToolTip>
                         </ComboBoxItem>
@@ -78,9 +83,9 @@
                         <ComboBoxItem Content="qwen2.5:32b-instruct-q4_K_M">
                             <ComboBoxItem.ToolTip>
                                 <TextBlock>
-                    <Bold>Очень высокое качество</Bold><LineBreak/>
-                    Требует много ресурсов и времени.<LineBreak/>
-                    Используйте только на мощном ПК для сложных задач.
+                                    <Bold>Очень высокое качество</Bold><LineBreak/>
+                                    Требует много ресурсов и времени.<LineBreak/>
+                                    Используйте только на мощном ПК для сложных задач.
                                 </TextBlock>
                             </ComboBoxItem.ToolTip>
                         </ComboBoxItem>
@@ -88,20 +93,21 @@
                         <ComboBoxItem Content="deepseek-r1:1.5b">
                             <ComboBoxItem.ToolTip>
                                 <TextBlock>
-                    <Bold>Максимальная скорость</Bold><LineBreak/>
-                    Низкое качество, но отвечает мгновенно.<LineBreak/>
-                    Подходит для простых вопросов и быстрых ответов.
+                                    <Bold>Максимальная скорость</Bold><LineBreak/>
+                                    Низкое качество, но отвечает мгновенно.<LineBreak/>
+                                    Подходит для простых вопросов и быстрых ответов.
                                 </TextBlock>
                             </ComboBoxItem.ToolTip>
                         </ComboBoxItem>
+
                         <ComboBoxItem Content="qwen3-embedding:8b">
                             <ComboBoxItem.ToolTip>
                                 <TextBlock>
-            <Bold>Компактная эмбеддинг‑модель</Bold><LineBreak/>
-            Быстро строит векторные представления, малый расход памяти.<LineBreak/>
-            Подходит для семантического поиска, кластеризации и простых классификаций.<LineBreak/>
-            <LineBreak/>
-            <Italic>Не предназначена для генерации ответов — только для получения эмбеддингов.</Italic>
+                                    <Bold>Компактная эмбеддинг‑модель</Bold><LineBreak/>
+                                    Быстро строит векторные представления, малый расход памяти.<LineBreak/>
+                                    Подходит для семантического поиска, кластеризации и простых классификаций.<LineBreak/>
+                                    <LineBreak/>
+                                    <Italic>Не предназначена для генерации ответов — только для получения эмбеддингов.</Italic>
                                 </TextBlock>
                             </ComboBoxItem.ToolTip>
                         </ComboBoxItem>

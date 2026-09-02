@@ -130,6 +130,16 @@ namespace Deepseek
 
             return chunks;
         }
+
+        public static List<string> Folders (string directoryPath)
+        {
+            string[] extensions = { ".txt", ".pdf", ".docx" };
+            var files = Directory.EnumerateFiles(directoryPath, "*.*", SearchOption.AllDirectories)
+                                 .Where(f => extensions.Contains(Path.GetExtension(f).ToLower())).ToList();
+            return files;
+
+        }
+
         /// <summary>
         /// Рекурсивно обходит указанную папку и извлекает текст из всех найденных .txt, .pdf, .docx файлов.
         /// </summary>
@@ -143,13 +153,16 @@ namespace Deepseek
                 Console.WriteLine($"Папка не найдена: {directoryPath}");
                 return result;
             }
+            var files = Folders(directoryPath);
+            return ExtractAllText(files);
+        }
 
-            string[] extensions = { ".txt", ".pdf", ".docx" };
-            var files = Directory.EnumerateFiles(directoryPath, "*.*", SearchOption.AllDirectories)
-                                 .Where(f => extensions.Contains(Path.GetExtension(f).ToLower()));
-
+        public static List<FileText> ExtractAllText(List<string> files)
+        {
+            var result = new List<FileText>();
             foreach (var file in files)
             {
+                
                 try
                 {
                     string rawText = ExtractTextFromFile(file);
@@ -162,9 +175,9 @@ namespace Deepseek
                     result.Add(new FileText { FileName = file, Text = string.Empty });
                 }
             }
-
             return result;
         }
+
         /// <summary>
         /// Очищает текст от мусора: пустых строк, строк-разделителей,
         /// множественных пробелов, повторяющихся символов и т.п.

@@ -37,7 +37,8 @@ namespace Deepseek
         public bool IsAdminCheckBox { get; set; } = false;
 
         public List<string> ConversationHistory { get; set; } = new List<string>(); // История диалога
-        
+
+        public string PromptVectorAnswer { get; set; } = "";// ответ промежуточной ИИ на вопрос
         //public string ContextFromFiles { get; set; } = "";
 
         public string promptFolder { get; set; } = @"Y:\ИИ\_БазаДанных"; // можно указать начальную папку
@@ -77,6 +78,11 @@ namespace Deepseek
             int number = random.Next(10000, 99000);
             return number;
         }
+
+
+        public int _chunkSize { get; set; } = 900;//слов в одном текстве
+        public int topK { get; set; } = 4;//выборка сообщений
+
     }
 
 
