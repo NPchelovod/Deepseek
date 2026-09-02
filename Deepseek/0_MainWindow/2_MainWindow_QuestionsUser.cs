@@ -14,6 +14,7 @@ using System.Diagnostics; // добавить в using
 
 namespace OllamaChat
 {
+    //отправка сообщения
     public partial class MainWindow
     {
         private async void SendButton_Click(object sender, RoutedEventArgs e)
@@ -92,13 +93,16 @@ namespace OllamaChat
             chatData.ConversationHistory.Add($"User: {prompt}");
 
             // Отображаем сообщение пользователя
-            AddMessage("Вы: ", prompt);
+            AddMessage($"\nВы_{chatData.Id}: ", prompt,chatData);
             InputBox.Clear();
+
+            //удаляем прошлые вопросы 
+            DeleteAllMessage(chatData.inboxPath);
 
             //сохранение данных
 
             // Сохраняем вопрос в папку inbox для администратора
-            string json = JsonSerializer.Serialize(chatData, new JsonSerializerOptions { WriteIndented = true });
+            string json = JsonSerializer.Serialize(chatData, new JsonSerializerOptions { IncludeFields = true, WriteIndented = true });
             await File.WriteAllTextAsync(chatData.FullFilePathVopros, json);
 
         }

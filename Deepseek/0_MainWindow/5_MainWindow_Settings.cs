@@ -41,7 +41,6 @@ namespace OllamaChat
             if (File.Exists(chatData.settingsPath))
             {
                 File.Delete(chatData.settingsPath);
-
             }
         }
 
@@ -57,7 +56,7 @@ namespace OllamaChat
 
         public void SaveFile()
         {
-            var options = new JsonSerializerOptions { WriteIndented = true };
+            var options = new JsonSerializerOptions { IncludeFields = true, WriteIndented = true };
             string outJson = JsonSerializer.Serialize(chatData, options);
             File.WriteAllTextAsync(chatData.settingsPath, outJson);
         }

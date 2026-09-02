@@ -26,22 +26,22 @@ namespace Deepseek
             ChangeId();
         }
 
-        public int Id;
+        public int Id { get; set; }=0;
 
-        public string ModelII = "qwen2.5:7b-instruct-q4_K_M";//"gemma2:9b",//"qwen2.5:32b-instruct-q4_K_M",//"deepseek-r1:8b",
-        public int SimvolsMax = 140000;
-        public bool UseCommonContext = false;// вгружать ли в себя файлы
-        public bool IsAdminCheckBox = false;
+        public string ModelII { get; set; } = "qwen2.5:7b-instruct-q4_K_M";//"gemma2:9b",//"qwen2.5:32b-instruct-q4_K_M",//"deepseek-r1:8b",
+        public int SimvolsMax { get; set; } = 140000;
+        public bool UseCommonContext { get; set; } = false;// вгружать ли в себя файлы
+        public bool IsAdminCheckBox { get; set; } = false;
 
-        public List<string> ConversationHistory = new List<string>(); // История диалога
-        public string ContextFromFiles = "";
+        public List<string> ConversationHistory { get; set; } = new List<string>(); // История диалога
+        public string ContextFromFiles { get; set; } = "";
 
-        public string promptFolder = @"Y:\ИИ\_БазаДанных"; // можно указать начальную папку
+        public string promptFolder { get; set; } = @"Y:\ИИ\_БазаДанных"; // можно указать начальную папку
         public DateTime Timestamp { get; set; }
 
-        public string inboxPath = @"Y:\ИИ\_Разработчику\_Вопросы";
-        public  string outboxPath = @"Y:\ИИ\_Разработчику\_Ответы";
-        public  string archivePath = @"Y:\ИИ\_Разработчику\_Архив"; // для обработанных запросов (опционально)
+        public string inboxPath { get; set; } = @"Y:\ИИ\_Разработчику\_Вопросы";
+        public string outboxPath { get; set; } = @"Y:\ИИ\_Разработчику\_Ответы";
+        public string archivePath { get; set; } = @"Y:\ИИ\_Разработчику\_Архив"; // для обработанных запросов (опционально)
 
         public  string settingsPath=> Path.Combine(Path.GetTempPath(), "ChatData.json");//уникальная версия для настроек
 
@@ -50,8 +50,8 @@ namespace Deepseek
         {
             Id = GetId();//смена id для продолжения истории
         }
-
-        public string GetFileName => $"ChatData_{userName}_{Id}.json";
+        public string GetFilePrefix => $"ChatData_{userName}";
+        public string GetFileName => GetFilePrefix+$"_{Id}.json";
 
         // Сборка полного пути:
         public string FullFilePathVopros => Path.Combine(inboxPath, GetFileName);

@@ -74,10 +74,10 @@
                 <!-- 3. Галочка "Я главный" и кнопка настроек -->
                 <StackPanel Orientation="Horizontal" Grid.Column="2" 
                             HorizontalAlignment="Right" VerticalAlignment="Center">
-                    <CheckBox x:Name="IsAdminCheckBox" Content="Я Админ" 
+                    <CheckBox x:Name="IsAdminCheckBox" Content="Я имею свою ИИ" 
                               VerticalAlignment="Center"
                               Checked="IsAdminCheckBox_Changed" Unchecked="IsAdminCheckBox_Changed"/>
-                    <Button Content="Настройки..." Margin="10,0,0,0" Padding="5,2" 
+                    <Button Content="Настройки Разраб." Margin="10,0,0,0" Padding="5,2" 
                             Click="SettingsButton_Click"/>
                 </StackPanel>
             </Grid>

@@ -57,7 +57,17 @@ namespace OllamaChat
                 string aiMessage = incomingChatData.ConversationHistory
                     .LastOrDefault(m => m.StartsWith("AI: "));
 
-                if (aiMessage != null)
+                if (aiMessage == null)
+                {
+                    aiMessage = "Error: Ответа нет";
+                    await Dispatcher.InvokeAsync(() =>
+                    {
+                        // Используем существующий метод AddMessage или напрямую AppendText
+                        AddMessage($"AI_{incomingChatData.Id}: ", aiMessage, incomingChatData);
+                        // Альтернатива: ChatBox.AppendText(aiMessage + "\n\n");
+                    });
+                }
+                else
                 {
                     // Убираем префикс "AI: " для аккуратного отображения
                     string cleanMessage = aiMessage.Substring(4).Trim();
@@ -66,7 +76,7 @@ namespace OllamaChat
                     await Dispatcher.InvokeAsync(() =>
                     {
                         // Используем существующий метод AddMessage или напрямую AppendText
-                        AddMessage("AI: ", cleanMessage);
+                        AddMessage($"AI_{incomingChatData.Id}: ", cleanMessage, incomingChatData);
                         // Альтернатива: ChatBox.AppendText(aiMessage + "\n\n");
                     });
 
@@ -80,6 +90,10 @@ namespace OllamaChat
 
                 chatData.ChangeId();//меняем id 
                 // Шаг 7: Удаляем файл ответа, чтобы не обрабатывать его повторно
+
+                //сохраняем в историю для повторного запуска
+                SaveFile();
+
                 File.Delete(filePath);
             }
             catch (Exception ex)

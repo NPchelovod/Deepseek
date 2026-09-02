@@ -11,7 +11,7 @@ namespace Deepseek
     {
         private readonly string _folderPath;
         private readonly Func<string, Task> _fileProcessor;
-        private readonly HashSet<string> _processedFiles = new();
+        private readonly Dictionary<string, DateTime> _processedFiles = new();
         private readonly int _intervalMs;
         private CancellationTokenSource _cts;
 
@@ -44,10 +44,11 @@ namespace Deepseek
                         var files = Directory.GetFiles(_folderPath);
                         foreach (var file in files)
                         {
-                            if (_processedFiles.Contains(file))
+                            var lastWrite = File.GetLastWriteTimeUtc(file);
+                            if (_processedFiles.TryGetValue(file, out var prevWrite) && prevWrite == lastWrite)
                                 continue;
+                            _processedFiles[file] = lastWrite;
 
-                            _processedFiles.Add(file);
                             try
                             {
                                 await _fileProcessor(file);

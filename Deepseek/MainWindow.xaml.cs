@@ -122,11 +122,11 @@ namespace OllamaChat
 
 
         
-        private void AddMessage(string sender, string message)
+        private void AddMessage(string sender, string message, ChatData chatData)
         {
             // Очищаем сообщение от тегов <think> и служебных префиксов
             string cleanedMessage = Regex.Replace(message, @"<think>.*?</think>", "", RegexOptions.Singleline);
-            cleanedMessage = cleanedMessage.Replace("AI:", "").Replace("Вы:", "").Trim();
+            cleanedMessage = cleanedMessage.Replace("AI:", "").Replace("Вы:", "").Replace($"_{chatData.Id.ToString()}", "").Trim();
 
             ChatBox.AppendText($"{sender}{cleanedMessage}\n\n");
             ChatBox.ScrollToEnd();
@@ -146,7 +146,7 @@ namespace OllamaChat
                     model = outChatData.ModelII,
                     prompt = prompt,
                     temperature = 0.7,
-                    max_tokens = 150,
+                    max_tokens = outChatData.SimvolsMax,
                     stream = true
                 };
 
