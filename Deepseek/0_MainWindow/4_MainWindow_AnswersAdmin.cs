@@ -1,7 +1,10 @@
 ﻿using Deepseek;
+using Deepseek;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Microsoft.Win32; // Для OpenFileDialog
 using System;
 using System.Collections.Generic;
+using System.Diagnostics; // добавить в using
 using System.IO;
 using System.Net.Http;
 using System.Text;
@@ -10,8 +13,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using System.Diagnostics; // добавить в using
-using Deepseek;
 namespace OllamaChat
 {
     public partial class MainWindow
@@ -35,6 +36,7 @@ namespace OllamaChat
             // ...
             try
             {
+                
                 // Шаг 1: Дождаться, пока файл будет полностью записан.
                 // Простая задержка 100-200 мс. Для надёжности можно проверять стабильность размера файла.
                 await Task.Delay(150);

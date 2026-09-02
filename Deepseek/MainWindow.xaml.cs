@@ -47,6 +47,7 @@ namespace OllamaChat
                 }
             }
             MaxTokensTextBox.Text = chatData.SimvolsMax.ToString();
+            IsAdminCheckBox.IsChecked = chatData.IsAdminCheckBox;
         }
 
 

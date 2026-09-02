@@ -28,6 +28,10 @@ namespace OllamaChat
 
                 chatData = incomingChatData;//так много проще
                 chatData.ChangeId();
+                foreach (var s in chatData.ConversationHistory)
+                {
+                    ChatBox.AppendText($"{s}\n\n");
+                }
             }
             else
             {
@@ -38,6 +42,7 @@ namespace OllamaChat
         {
             //очистка истории
             chatData = new ChatData(chatData);
+            ChatBox.Clear();
             if (File.Exists(chatData.settingsPath))
             {
                 File.Delete(chatData.settingsPath);
