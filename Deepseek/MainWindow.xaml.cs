@@ -88,7 +88,7 @@ namespace OllamaChat
             chatData.UseCommonContext = UseContextCheckBox.IsChecked == true;
             
             // готовим контекст
-            GetContextFileData();
+            GetContextFileData(chatData);
            
 
         }

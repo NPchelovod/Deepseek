@@ -101,33 +101,55 @@ namespace OllamaChat
             }
 
             string question = outChatData.ConversationHistory[outChatData.ConversationHistory.Count - 1].Replace("User:","");
+
+            // 1. Системная инструкция
+            promptBuilder.AppendLine("Ты — полезный ассистент. Отвечай обычным текстом, без LaTeX-разметки. Используй предоставленный контекст для ответа на вопросы.");
             if (outChatData.UseCommonContext)
             {
                 // 1. Ищем релевантные фрагменты
                 
                 var relevantChunks = await SearchRelevantChunksAsync(question, outChatData);
                 var context = string.Join("\n\n", relevantChunks.Select((c, i) => $"Документ {i + 1}:\n{c}"));
-            }
 
+                // 2. Контекст из файлов (если есть)
+                if (string.IsNullOrEmpty(context))
+                {
+                    if (outChatData.ContextFromFiles.Length == 0)
+                    {
+                        GetContextFileData(outChatData);
+                    }
 
-            // 1. Системная инструкция
-            promptBuilder.AppendLine("Ты — полезный ассистент. Отвечай обычным текстом, без LaTeX-разметки. Используй предоставленный контекст для ответа на вопросы.");
-
-            // 2. Контекст из файлов (если есть)
-            if (!string.IsNullOrWhiteSpace(outChatData.ContextFromFiles) && outChatData.UseCommonContext)
-            {
-                // Берём первые N символов, чтобы не превысить лимит модели.
-                // Вы можете настроить N в зависимости от модели и её контекстного окна.
-                int maxContextLength = outChatData.SimvolsMax;
-                string context = outChatData.ContextFromFiles.Length > maxContextLength
-                    ? outChatData.ContextFromFiles.Substring(0, maxContextLength)
-                    : outChatData.ContextFromFiles;
-
+                   // Вы можете настроить N в зависимости от модели и её контекстного окна.
+                        int maxContextLength = outChatData.SimvolsMax;
+                    context = outChatData.ContextFromFiles.Length > maxContextLength
+                        ? outChatData.ContextFromFiles.Substring(0, maxContextLength)
+                        : outChatData.ContextFromFiles;
+                }
                 promptBuilder.AppendLine("=== КОНТЕКСТ ИЗ ФАЙЛОВ ===");
                 promptBuilder.AppendLine(context);
                 promptBuilder.AppendLine("=== КОНЕЦ КОНТЕКСТА ===");
                 promptBuilder.AppendLine();
+
             }
+
+
+            
+
+            //// 2. Контекст из файлов (если есть)
+            //if (!string.IsNullOrWhiteSpace(outChatData.ContextFromFiles) && outChatData.UseCommonContext)
+            //{
+            //    // Берём первые N символов, чтобы не превысить лимит модели.
+            //    // Вы можете настроить N в зависимости от модели и её контекстного окна.
+            //    int maxContextLength = outChatData.SimvolsMax;
+            //    string context = outChatData.ContextFromFiles.Length > maxContextLength
+            //        ? outChatData.ContextFromFiles.Substring(0, maxContextLength)
+            //        : outChatData.ContextFromFiles;
+
+            //    promptBuilder.AppendLine("=== КОНТЕКСТ ИЗ ФАЙЛОВ ===");
+            //    promptBuilder.AppendLine(context);
+            //    promptBuilder.AppendLine("=== КОНЕЦ КОНТЕКСТА ===");
+            //    promptBuilder.AppendLine();
+            //}
 
             // 3. История диалога (последние 10 сообщений)
             int startIndex = Math.Max(0, outChatData.ConversationHistory.Count - 10);

@@ -1,5 +1,6 @@
 ﻿using Deepseek;
 using Deepseek;
+using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.Win32; // Для OpenFileDialog
 using System;
 using System.Collections.Generic;
@@ -78,13 +79,16 @@ namespace OllamaChat
 
         private async Task<List<string>> SearchRelevantChunksAsync(string query, ChatData outChatData, int topK = 3)
         {
+            List<(string Text, float[] Embedding)> _chunks = outChatData._chunks;
+            if (_chunks.Count == 0)
+            {
+                _chunks = await GetChanks(outChatData);
+            }
+
             var queryEmbedding = await GetEmbeddingAsync(query);
             var similarities = new List<(float Score, string Text)>();
 
-            if(chatData._chunks.Count ==0)
-            {
-
-            }
+            
 
             foreach (var (text, embedding) in chatData._chunks)
             {
@@ -99,11 +103,25 @@ namespace OllamaChat
                 .ToList();
         }
 
-        public void GetChanks(ChatData outChatData, int chunkSize = 800)
+        public async Task<List<(string Text, float[] Embedding)>> GetChanks(ChatData outChatData, int chunkSize = 800)
         {
-            chatData._chunks.Clear(); // Очищаем предыдущую базу знаний (если нужно)
+            outChatData._chunks.Clear(); // Очищаем предыдущую базу знаний (если нужно)
+            if(outChatData.ContextFromFiles.Length == 0)
+            {
+                GetContextFileData(outChatData);
+            }
+            if(outChatData.ContextFromFiles.Length == 0) { return outChatData._chunks; }
 
+            var chunks = TextExtractor.ChunkText(outChatData.ContextFromFiles);
+            foreach (var chunk in chunks)
+            {
+                var embedding = await GetEmbeddingAsync(chunk);
 
+                // Добавляем информацию об источнике в текст чанка
+                string chunkWithMeta = $"[{"Документ X"}] {chunk}";
+                outChatData._chunks.Add((chunkWithMeta, embedding));
+            }
+            return outChatData._chunks;
         }
 
         private float CosineSimilarity(float[] vec1, float[] vec2)
