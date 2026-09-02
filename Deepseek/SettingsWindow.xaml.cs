@@ -35,6 +35,9 @@ namespace Deepseek
             OutboxPathTextBox.Text = _mainWindow.chatData.outboxPath;
             ArchivePathTextBox.Text = _mainWindow.chatData.archivePath;
             PromptFolderTextBox.Text = _mainWindow.chatData.promptFolder;
+            OllamaUrlTextBox.Text = _mainWindow.chatData.OllamaApiUrl;
+            FileModelII.Text= _mainWindow.chatData.ModelII;
+
         }
         // Обработчик кнопки "Обзор..." для поля "Папка входящих"
         private void BrowseInbox_Click(object sender, RoutedEventArgs e)
@@ -93,8 +96,14 @@ namespace Deepseek
             }
 
             //сохраняем 
-            
-
+            if (!string.IsNullOrEmpty(OllamaUrlTextBox.Text))
+            {
+                _mainWindow.chatData.OllamaApiUrl = OllamaUrlTextBox.Text;
+            }
+            if (!string.IsNullOrEmpty(FileModelII.Text))
+            {
+                _mainWindow.chatData.ModelII = FileModelII.Text;
+            }
             Close();
         }
         private void CancelButton_Click(object sender, RoutedEventArgs e)

@@ -94,6 +94,17 @@
                                 </TextBlock>
                             </ComboBoxItem.ToolTip>
                         </ComboBoxItem>
+                        <ComboBoxItem Content="qwen3-embedding:8b">
+                            <ComboBoxItem.ToolTip>
+                                <TextBlock>
+            <Bold>Компактная эмбеддинг‑модель</Bold><LineBreak/>
+            Быстро строит векторные представления, малый расход памяти.<LineBreak/>
+            Подходит для семантического поиска, кластеризации и простых классификаций.<LineBreak/>
+            <LineBreak/>
+            <Italic>Не предназначена для генерации ответов — только для получения эмбеддингов.</Italic>
+                                </TextBlock>
+                            </ComboBoxItem.ToolTip>
+                        </ComboBoxItem>
                     </ComboBox>
                 </StackPanel>
 

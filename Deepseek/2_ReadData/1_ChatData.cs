@@ -29,6 +29,8 @@ namespace Deepseek
         public int Id { get; set; }=0;
 
         public string ModelII { get; set; } = "qwen2.5:7b-instruct-q4_K_M";//"gemma2:9b",//"qwen2.5:32b-instruct-q4_K_M",//"deepseek-r1:8b",
+
+        public string EmbeddingModel = "nomic-embedded-text-v2-moe";
         public int SimvolsMax { get; set; } = 140000;
         public bool UseCommonContext { get; set; } = false;// вгружать ли в себя файлы
         public bool IsAdminCheckBox { get; set; } = false;
@@ -42,6 +44,11 @@ namespace Deepseek
         public string inboxPath { get; set; } = @"Y:\ИИ\_Разработчику\_Вопросы";
         public string outboxPath { get; set; } = @"Y:\ИИ\_Разработчику\_Ответы";
         public string archivePath { get; set; } = @"Y:\ИИ\_Разработчику\_Архив"; // для обработанных запросов (опционально)
+
+        public string OllamaApiUrl { get; set; } = "http://localhost:11434/api/generate";
+
+        // Хранилище чанков: текст + вектор
+        public List<(string Text, float[] Embedding)> _chunks = new();
 
         public  string settingsPath=> Path.Combine(Path.GetTempPath(), "ChatData.json");//уникальная версия для настроек
 

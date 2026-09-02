@@ -17,7 +17,7 @@ namespace OllamaChat
     public partial class MainWindow : Window
     {
         private readonly HttpClient _httpClient;
-        private const string OllamaApiUrl = "http://localhost:11434/api/generate";
+        private  string OllamaApiUrl =>chatData.OllamaApiUrl;
 
         public static MainWindow mainWindow;
 
@@ -154,7 +154,7 @@ namespace OllamaChat
                     temperature = 0.7,
                     max_tokens = outChatData.SimvolsMax,
                     stream = true,
-                    keep_alive = "10h"   // или "24h", "-1" для постоянного удержания
+                   // keep_alive = "10h"   // или "24h", "-1" для постоянного удержания
                 };
 
                 var json = JsonSerializer.Serialize(requestData);
