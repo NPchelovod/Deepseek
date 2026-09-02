@@ -24,23 +24,41 @@ namespace OllamaChat
             var requestData = new
             {
                 model = chatData.EmbeddingModel,
-                prompt = text
+                input = text
+                //prompt = text
             };
             var json = JsonSerializer.Serialize(requestData);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync(OllamaApiUrl, content);
+            var response = await _httpClient.PostAsync(OllamaApiUrlEmbed, content);
             response.EnsureSuccessStatusCode();
 
             var responseString = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Embedding response: {responseString}");
             using JsonDocument doc = JsonDocument.Parse(responseString);
             JsonElement root = doc.RootElement;
 
             // Ollama возвращает embedding как массив чисел в поле "embedding"
+            // Ollama возвращает embedding как массив чисел в поле "embedding" или "embeddings"
             if (root.TryGetProperty("embedding", out JsonElement embeddingElement))
             {
                 var embedding = new List<float>();
                 foreach (var item in embeddingElement.EnumerateArray())
+                {
+                    embedding.Add(item.GetSingle());
+                }
+                return embedding.ToArray();
+            }
+
+            // Вариант 2: поле "embeddings" — массив массивов
+            if (root.TryGetProperty("embeddings", out JsonElement embeddingsElement) &&
+                embeddingsElement.GetArrayLength() > 0)
+            {
+                // Берём первый (и обычно единственный) вектор эмбеддинга
+                var firstEmbeddingArray = embeddingsElement[0];
+
+                var embedding = new List<float>();
+                foreach (var item in firstEmbeddingArray.EnumerateArray())
                 {
                     embedding.Add(item.GetSingle());
                 }
@@ -90,7 +108,7 @@ namespace OllamaChat
 
             
 
-            foreach (var (text, embedding) in chatData._chunks)
+            foreach (var (text, embedding) in outChatData._chunks)
             {
                 float score = CosineSimilarity(queryEmbedding, embedding);
                 similarities.Add((score, text));

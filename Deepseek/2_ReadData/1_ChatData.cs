@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.IO;
+using static System.Net.WebRequestMethods;
 namespace Deepseek
 {
 
@@ -30,8 +31,8 @@ namespace Deepseek
 
         public string ModelII { get; set; } = "qwen2.5:7b-instruct-q4_K_M";//"gemma2:9b",//"qwen2.5:32b-instruct-q4_K_M",//"deepseek-r1:8b",
 
-        public string EmbeddingModel = "nomic-embedded-text-v2-moe";
-        public int SimvolsMax { get; set; } = 140000;
+        public string EmbeddingModel = "nomic-embed-text-v2-moe";// qwen3-embedding:8b";
+        public int SimvolsMax { get; set; } = 40000;
         public bool UseCommonContext { get; set; } = false;// вгружать ли в себя файлы
         public bool IsAdminCheckBox { get; set; } = false;
 
@@ -46,6 +47,8 @@ namespace Deepseek
         public string archivePath { get; set; } = @"Y:\ИИ\_Разработчику\_Архив"; // для обработанных запросов (опционально)
 
         public string OllamaApiUrl { get; set; } = "http://localhost:11434/api/generate";
+
+        public string OllamaApiUrlEmbed { get; set; } = "http://localhost:11434/api/embed";// "http://localhost:11434/api/embeddings";// "http://localhost:11434/api/embed";
 
         // Хранилище чанков: текст + вектор
         public List<(string Text, float[] Embedding)> _chunks = new();

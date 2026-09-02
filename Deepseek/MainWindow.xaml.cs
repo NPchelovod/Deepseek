@@ -18,6 +18,7 @@ namespace OllamaChat
     {
         private readonly HttpClient _httpClient;
         private  string OllamaApiUrl =>chatData.OllamaApiUrl;
+        private string OllamaApiUrlEmbed => chatData.OllamaApiUrlEmbed;
 
         public static MainWindow mainWindow;
 
