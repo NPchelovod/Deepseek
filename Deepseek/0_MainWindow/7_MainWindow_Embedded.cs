@@ -76,10 +76,15 @@ namespace OllamaChat
         }
         // Поиск похожих чанков
 
-        private async Task<List<string>> SearchRelevantChunksAsync(string query, int topK = 3)
+        private async Task<List<string>> SearchRelevantChunksAsync(string query, ChatData outChatData, int topK = 3)
         {
             var queryEmbedding = await GetEmbeddingAsync(query);
             var similarities = new List<(float Score, string Text)>();
+
+            if(chatData._chunks.Count ==0)
+            {
+
+            }
 
             foreach (var (text, embedding) in chatData._chunks)
             {
@@ -92,6 +97,13 @@ namespace OllamaChat
                 .Take(topK)
                 .Select(s => s.Text)
                 .ToList();
+        }
+
+        public void GetChanks(ChatData outChatData, int chunkSize = 800)
+        {
+            chatData._chunks.Clear(); // Очищаем предыдущую базу знаний (если нужно)
+
+
         }
 
         private float CosineSimilarity(float[] vec1, float[] vec2)

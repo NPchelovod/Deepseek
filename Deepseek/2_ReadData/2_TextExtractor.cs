@@ -13,6 +13,124 @@ namespace Deepseek
     public static class TextExtractor
     {
         /// <summary>
+        /// Разбивает очищенный текст на чанки с учётом абзацев и предложений.
+        /// </summary>
+        /// <param name="text">Исходный текст (уже очищенный).</param>
+        /// <param name="maxChunkSize">Максимальный размер чанка в символах.</param>
+        /// <param name="overlapSize">Размер перекрытия между чанками в символах.</param>
+        /// <returns>Список чанков.</returns>
+        public static List<string> ChunkText(string text, int maxChunkSize = 800, int overlapSize = 100)
+        {
+            var chunks = new List<string>();
+            if (string.IsNullOrWhiteSpace(text))
+                return chunks;
+
+            // 1. Разбиваем текст на абзацы по переводам строк
+            var paragraphs = text.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries)
+                                 .Select(p => p.Trim())
+                                 .Where(p => p.Length > 0)
+                                 .ToList();
+
+            var currentChunk = new StringBuilder();
+
+            foreach (var paragraph in paragraphs)
+            {
+                // Если добавление абзаца не превышает maxChunkSize, добавляем целиком
+                if (currentChunk.Length + paragraph.Length + 1 <= maxChunkSize)
+                {
+                    if (currentChunk.Length > 0)
+                        currentChunk.Append(" ");
+                    currentChunk.Append(paragraph);
+                }
+                else
+                {
+                    // Если абзац сам по себе больше maxChunkSize, разбиваем по предложениям
+                    if (currentChunk.Length > 0)
+                    {
+                        chunks.Add(currentChunk.ToString().Trim());
+                        // Добавляем перекрытие из последних символов предыдущего чанка
+                        currentChunk.Clear();
+                        if (overlapSize > 0 && chunks.Count > 0)
+                        {
+                            string lastChunk = chunks[^1];
+                            int start = Math.Max(0, lastChunk.Length - overlapSize);
+                            currentChunk.Append(lastChunk.Substring(start));
+                        }
+                    }
+
+                    // Разбиваем длинный абзац на предложения
+                    var sentences = Regex.Split(paragraph, @"(?<=[.!?])\s+")
+                                         .Select(s => s.Trim())
+                                         .Where(s => s.Length > 0)
+                                         .ToList();
+
+                    foreach (var sentence in sentences)
+                    {
+                        if (currentChunk.Length + sentence.Length + 1 <= maxChunkSize)
+                        {
+                            if (currentChunk.Length > 0)
+                                currentChunk.Append(" ");
+                            currentChunk.Append(sentence);
+                        }
+                        else
+                        {
+                            // Если предложение само длиннее maxChunkSize, режем по словам
+                            if (sentence.Length > maxChunkSize)
+                            {
+                                if (currentChunk.Length > 0)
+                                {
+                                    chunks.Add(currentChunk.ToString().Trim());
+                                    currentChunk.Clear();
+                                    if (overlapSize > 0 && chunks.Count > 0)
+                                    {
+                                        string lastChunk = chunks[^1];
+                                        int start = Math.Max(0, lastChunk.Length - overlapSize);
+                                        currentChunk.Append(lastChunk.Substring(start));
+                                    }
+                                }
+
+                                // Жёсткое разбиение длинного предложения по словам
+                                var words = sentence.Split(' ');
+                                foreach (var word in words)
+                                {
+                                    if (currentChunk.Length + word.Length + 1 > maxChunkSize)
+                                    {
+                                        chunks.Add(currentChunk.ToString().Trim());
+                                        currentChunk.Clear();
+                                        if (overlapSize > 0 && chunks.Count > 0)
+                                        {
+                                            string lastChunk = chunks[^1];
+                                            int start = Math.Max(0, lastChunk.Length - overlapSize);
+                                            currentChunk.Append(lastChunk.Substring(start));
+                                        }
+                                    }
+                                    currentChunk.Append(word + " ");
+                                }
+                            }
+                            else
+                            {
+                                // Начинаем новый чанк с этим предложением
+                                chunks.Add(currentChunk.ToString().Trim());
+                                currentChunk.Clear();
+                                if (overlapSize > 0 && chunks.Count > 0)
+                                {
+                                    string lastChunk = chunks[^1];
+                                    int start = Math.Max(0, lastChunk.Length - overlapSize);
+                                    currentChunk.Append(lastChunk.Substring(start));
+                                }
+                                currentChunk.Append(sentence);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (currentChunk.Length > 0)
+                chunks.Add(currentChunk.ToString().Trim());
+
+            return chunks;
+        }
+        /// <summary>
         /// Рекурсивно обходит указанную папку и извлекает текст из всех найденных .txt, .pdf, .docx файлов.
         /// </summary>
         /// <param name="directoryPath">Корневая папка для поиска.</param>
@@ -161,4 +279,6 @@ namespace Deepseek
         public string FileName { get; set; }
         public string Text { get; set; }
     }
+
+
 }

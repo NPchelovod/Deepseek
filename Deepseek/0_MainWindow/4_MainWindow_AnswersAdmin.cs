@@ -1,5 +1,6 @@
 ﻿using Deepseek;
 using Deepseek;
+using DocumentFormat.OpenXml.Office.SpreadSheetML.Y2023.MsForms;
 using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Microsoft.Win32; // Для OpenFileDialog
 using System;
@@ -52,7 +53,7 @@ namespace OllamaChat
                 }
 
                 // Шаг 3: Сформировать полный промпт с учётом контекста и истории
-                string fullPrompt = BuildPromptWithHistory(incomingChatData);
+                string fullPrompt = await BuildPromptWithHistory(incomingChatData);
 
                 // Шаг 4: Вызвать генерацию ответа (потоковую), передавая модель и другие параметры
                 string response = await GenerateTextStreamAsync(fullPrompt, incomingChatData);
@@ -90,9 +91,24 @@ namespace OllamaChat
             }
         }
 
-        private string BuildPromptWithHistory(ChatData outChatData)
+        private async Task<string> BuildPromptWithHistory(ChatData outChatData)
         {
             var promptBuilder = new StringBuilder();
+
+            if (outChatData.ConversationHistory.Count == 0)
+            { 
+                return promptBuilder.ToString();
+            }
+
+            string question = outChatData.ConversationHistory[outChatData.ConversationHistory.Count - 1].Replace("User:","");
+            if (outChatData.UseCommonContext)
+            {
+                // 1. Ищем релевантные фрагменты
+                
+                var relevantChunks = await SearchRelevantChunksAsync(question, outChatData);
+                var context = string.Join("\n\n", relevantChunks.Select((c, i) => $"Документ {i + 1}:\n{c}"));
+            }
+
 
             // 1. Системная инструкция
             promptBuilder.AppendLine("Ты — полезный ассистент. Отвечай обычным текстом, без LaTeX-разметки. Используй предоставленный контекст для ответа на вопросы.");
