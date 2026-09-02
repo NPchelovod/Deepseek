@@ -21,7 +21,7 @@ namespace OllamaChat
             await SendMessage();
         }
 
-        private async void InputBox_KeyDown(object sender, KeyEventArgs e)
+        private async void InputBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == Key.Enter)// && Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
             {
@@ -75,7 +75,7 @@ namespace OllamaChat
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Ошибка загрузки: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    System.Windows.MessageBox.Show($"Ошибка загрузки: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }

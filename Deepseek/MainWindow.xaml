@@ -25,6 +25,9 @@
             <Button Content="Загрузить папку" DockPanel.Dock="Left" 
                     Click="LoadFolderButton_Click" Margin="0,0,5,0" Padding="5"/>
 
+            <Button Content="Очистить историю" DockPanel.Dock="Left" 
+                    Click="ClearHistoryButton_Click" Margin="0,0,5,0" Padding="5"/>
+
             <Button Content="Отправить" DockPanel.Dock="Right" 
                     Click="SendButton_Click" Margin="5,0,0,0" Padding="10,5"/>
 
@@ -36,7 +39,7 @@
                      MinWidth="200"/>
         </DockPanel>
 
-        <!-- Новая панель настроек (Grid.Row="2") -->
+        <!-- Панель настроек -->
         <Border Grid.Row="2" Background="#F5F5F5" Padding="10" Margin="5" CornerRadius="4">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -59,19 +62,24 @@
 
                 <!-- 2. Макс. токенов -->
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Grid.Column="1" Margin="20,0,10,0">
-                    <TextBlock Text="Макс. токенов:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <TextBlock Text="Макс. токенов/слов:" VerticalAlignment="Center" Margin="0,0,8,0"/>
                     <TextBox x:Name="MaxTokensTextBox"
                              Width="80"
                              VerticalAlignment="Center"
-                             Text="4096"
+                             Text="100000"
                              TextAlignment="Right"
                              TextChanged="MaxTokensTextBox_TextChanged"/>
                 </StackPanel>
 
-                <!-- 3. Галочка "Я главный" -->
-                <CheckBox x:Name="IsAdminCheckBox" Grid.Column="2" Content="Я главный пользователь" 
-                          VerticalAlignment="Center" HorizontalAlignment="Right"
-                          Checked="IsAdminCheckBox_Changed" Unchecked="IsAdminCheckBox_Changed"/>
+                <!-- 3. Галочка "Я главный" и кнопка настроек -->
+                <StackPanel Orientation="Horizontal" Grid.Column="2" 
+                            HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <CheckBox x:Name="IsAdminCheckBox" Content="Я Админ" 
+                              VerticalAlignment="Center"
+                              Checked="IsAdminCheckBox_Changed" Unchecked="IsAdminCheckBox_Changed"/>
+                    <Button Content="Настройки..." Margin="10,0,0,0" Padding="5,2" 
+                            Click="SettingsButton_Click"/>
+                </StackPanel>
             </Grid>
         </Border>
     </Grid>

@@ -36,6 +36,7 @@ namespace OllamaChat
         {
             InitializeAnswerUsers();
             InitializeAnswerAdmin();
+            InitializeSettings();//загрузка начальной модели старой преднастройке
             // Установка модели в ComboBox в соответствии с chatData.ModelII
             foreach (ComboBoxItem item in ModelComboBox.Items)
             {
@@ -45,6 +46,7 @@ namespace OllamaChat
                     break;
                 }
             }
+            MaxTokensTextBox.Text = chatData.SimvolsMax.ToString();
         }
 
 

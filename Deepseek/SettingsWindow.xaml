@@ -1,0 +1,52 @@
+﻿<Window x:Class="Deepseek.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Настройки" Height="300" Width="600"
+        WindowStartupLocation="CenterOwner">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Заголовок -->
+        <TextBlock Grid.Row="0" Grid.ColumnSpan="3" Text="Пути и параметры" 
+                   FontWeight="Bold" FontSize="14" Margin="0,0,0,15"/>
+
+        <!-- inboxPath -->
+        <TextBlock Grid.Row="1" Grid.Column="0" Text="Папка входящих:" VerticalAlignment="Center" Margin="0,0,10,5"/>
+        <TextBox Grid.Row="1" Grid.Column="1" x:Name="InboxPathTextBox" Margin="0,0,5,5" VerticalAlignment="Center"/>
+        <Button Grid.Row="1" Grid.Column="2" Content="Обзор..." Padding="5,2" Margin="0,0,0,5" Click="BrowseInbox_Click"/>
+
+        <!-- outboxPath -->
+        <TextBlock Grid.Row="2" Grid.Column="0" Text="Папка исходящих:" VerticalAlignment="Center" Margin="0,0,10,5"/>
+        <TextBox Grid.Row="2" Grid.Column="1" x:Name="OutboxPathTextBox" Margin="0,0,5,5" VerticalAlignment="Center"/>
+        <Button Grid.Row="2" Grid.Column="2" Content="Обзор..." Padding="5,2" Margin="0,0,0,5" Click="BrowseOutbox_Click"/>
+
+        <!-- archivePath -->
+        <TextBlock Grid.Row="3" Grid.Column="0" Text="Папка архива:" VerticalAlignment="Center" Margin="0,0,10,5"/>
+        <TextBox Grid.Row="3" Grid.Column="1" x:Name="ArchivePathTextBox" Margin="0,0,5,5" VerticalAlignment="Center"/>
+        <Button Grid.Row="3" Grid.Column="2" Content="Обзор..." Padding="5,2" Margin="0,0,0,5" Click="BrowseArchive_Click"/>
+
+        <!-- promptFolder -->
+        <TextBlock Grid.Row="4" Grid.Column="0" Text="Папка с базой знаний:" VerticalAlignment="Center" Margin="0,0,10,5"/>
+        <TextBox Grid.Row="4" Grid.Column="1" x:Name="PromptFolderTextBox" Margin="0,0,5,5" VerticalAlignment="Center"/>
+        <Button Grid.Row="4" Grid.Column="2" Content="Обзор..." Padding="5,2" Margin="0,0,0,5" Click="BrowsePromptFolder_Click"/>
+
+        <!-- Кнопки сохранения/отмены -->
+        <StackPanel Grid.Row="5" Grid.ColumnSpan="3" Orientation="Horizontal" 
+                    HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,10,0,0">
+            <Button Content="Сохранить" Width="80" Margin="0,0,10,0" Click="SaveButton_Click"/>
+            <Button Content="Отмена" Width="80" Click="CancelButton_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

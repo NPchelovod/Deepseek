@@ -13,7 +13,18 @@ namespace Deepseek
         {
             ChangeId();
         }
-
+        public ChatData(ChatData chatData)
+        {
+            ModelII = chatData.ModelII;
+            SimvolsMax = chatData.SimvolsMax;
+            UseCommonContext = chatData.UseCommonContext;
+            IsAdminCheckBox = chatData.IsAdminCheckBox;
+            promptFolder = chatData.promptFolder;
+            inboxPath = chatData.inboxPath;
+            outboxPath = chatData.outboxPath;
+            archivePath = chatData.archivePath;
+            ChangeId();
+        }
 
         public int Id;
 
@@ -28,19 +39,19 @@ namespace Deepseek
         public string promptFolder = @"Y:\ИИ\_БазаДанных"; // можно указать начальную папку
         public DateTime Timestamp { get; set; }
 
-        public readonly string inboxPath = @"Y:\ИИ\_Разработчику\_Вопросы";
-        public readonly string outboxPath = @"Y:\ИИ\_Разработчику\_Ответы";
-        public readonly string archivePath = @"Y:\ИИ\_Разработчику\_Архив"; // для обработанных запросов (опционально)
+        public string inboxPath = @"Y:\ИИ\_Разработчику\_Вопросы";
+        public  string outboxPath = @"Y:\ИИ\_Разработчику\_Ответы";
+        public  string archivePath = @"Y:\ИИ\_Разработчику\_Архив"; // для обработанных запросов (опционально)
 
+        public  string settingsPath=> Path.Combine(Path.GetTempPath(), "ChatData.json");//уникальная версия для настроек
 
-        
-
+        public string userName => Environment.UserName;
         public void ChangeId()
         {
             Id = GetId();//смена id для продолжения истории
         }
 
-        public string GetFileName => $"ChatData{Id}.json";
+        public string GetFileName => $"ChatData_{userName}_{Id}.json";
 
         // Сборка полного пути:
         public string FullFilePathVopros => Path.Combine(inboxPath, GetFileName);
