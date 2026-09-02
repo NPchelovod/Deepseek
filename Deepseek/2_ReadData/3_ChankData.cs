@@ -148,7 +148,7 @@ namespace Deepseek
                 if (!Directory.Exists(folderVectors)) { return; }
             }
             string json = JsonSerializer.Serialize(this, new JsonSerializerOptions { IncludeFields = true, WriteIndented = true });
-            File.WriteAllTextAsync(folderVectors, json);
+            File.WriteAllTextAsync(chatData.nameVectors, json);
         }
 
     }

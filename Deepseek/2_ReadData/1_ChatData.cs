@@ -43,7 +43,7 @@ namespace Deepseek
         public string promptFolder { get; set; } = @"Y:\ИИ\_БазаДанных"; // можно указать начальную папку
 
         public string promptFolderVectors  => Path.Combine(promptFolder, "_Вектора"); // получение папки ветора
-
+        public string nameVectors=> Path.Combine(promptFolderVectors, "Vectors.json");//уникальная версия для настроек
         public DateTime Timestamp { get; set; }
 
         public string inboxPath { get; set; } = @"Y:\ИИ\_Разработчику\_Вопросы";
