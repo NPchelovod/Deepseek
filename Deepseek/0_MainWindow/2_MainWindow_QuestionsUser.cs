@@ -52,12 +52,12 @@ namespace OllamaChat
             }
         }
 
-        private void GetContextFileData(ChatData outChatData)
+        private string  GetContextFileData(ChatData outChatData)
         {
             // Дальше тот же код загрузки, что и раньше
             if (!outChatData.UseCommonContext)
             {
-                outChatData.ContextFromFiles = "";
+                return "";
             }
             else
             {
@@ -71,14 +71,15 @@ namespace OllamaChat
                         sb.AppendLine(file.Text);
                         sb.AppendLine();
                     }
-                    outChatData.ContextFromFiles = sb.ToString();
+                    UseContextCheckBox.IsChecked = true;
+                    return sb.ToString();
                     /*MessageBox.Show($"Загружено {extracted.Count} файлов.", "Готово", MessageBoxButton.OK, *///MessageBoxImage.Information);
 
-                    UseContextCheckBox.IsChecked = true;
                 }
                 catch (Exception ex)
                 {
                     System.Windows.MessageBox.Show($"Ошибка загрузки: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return "";
                 }
             }
         }

@@ -37,9 +37,13 @@ namespace Deepseek
         public bool IsAdminCheckBox { get; set; } = false;
 
         public List<string> ConversationHistory { get; set; } = new List<string>(); // История диалога
-        public string ContextFromFiles { get; set; } = "";
+        
+        //public string ContextFromFiles { get; set; } = "";
 
         public string promptFolder { get; set; } = @"Y:\ИИ\_БазаДанных"; // можно указать начальную папку
+
+        public string promptFolderVectors  => Path.Combine(promptFolder, "_Вектора"); // получение папки ветора
+
         public DateTime Timestamp { get; set; }
 
         public string inboxPath { get; set; } = @"Y:\ИИ\_Разработчику\_Вопросы";
@@ -51,7 +55,7 @@ namespace Deepseek
         public string OllamaApiUrlEmbed { get; set; } = "http://localhost:11434/api/embed";// "http://localhost:11434/api/embeddings";// "http://localhost:11434/api/embed";
 
         // Хранилище чанков: текст + вектор
-        public List<(string Text, float[] Embedding)> _chunks = new();
+        //public List<(string Text, float[] Embedding)> _chunks = new();
 
         public  string settingsPath=> Path.Combine(Path.GetTempPath(), "ChatData.json");//уникальная версия для настроек
 

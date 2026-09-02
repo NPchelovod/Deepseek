@@ -114,16 +114,15 @@ namespace OllamaChat
                 // 2. Контекст из файлов (если есть)
                 if (string.IsNullOrEmpty(context))
                 {
-                    if (outChatData.ContextFromFiles.Length == 0)
-                    {
-                        GetContextFileData(outChatData);
-                    }
+
+                    context = GetContextFileData(outChatData);
+                    
 
                    // Вы можете настроить N в зависимости от модели и её контекстного окна.
                         int maxContextLength = outChatData.SimvolsMax;
-                    context = outChatData.ContextFromFiles.Length > maxContextLength
-                        ? outChatData.ContextFromFiles.Substring(0, maxContextLength)
-                        : outChatData.ContextFromFiles;
+                    context = context.Length > maxContextLength
+                        ? context.Substring(0, maxContextLength)
+                        : context;
                 }
                 promptBuilder.AppendLine("=== КОНТЕКСТ ИЗ ФАЙЛОВ ===");
                 promptBuilder.AppendLine(context);

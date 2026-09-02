@@ -19,7 +19,7 @@ namespace OllamaChat
     public partial class MainWindow
     {
         //Метод для получения эмбеддингов
-        private async Task<float[]> GetEmbeddingAsync(string text)
+        public async Task<float[]> GetEmbeddingAsync(string text)
         {
             var requestData = new
             {
@@ -67,21 +67,7 @@ namespace OllamaChat
             throw new Exception("Embedding not found in response");
         }
 
-        //Индексация документов
-        public async Task IndexDocumentsAsync(IEnumerable<string> documents)
-        {
-            chatData._chunks.Clear();
-            foreach (var doc in documents)
-            {
-                // Разбиваем документ на чанки (пример простого разбиения по 800 символов)
-                var chunks = SplitIntoChunks(doc, 800);
-                foreach (var chunk in chunks)
-                {
-                    var embedding = await GetEmbeddingAsync(chunk);
-                    chatData._chunks.Add((chunk, embedding));
-                }
-            }
-        }
+       
 
 
         private List<string> SplitIntoChunks(string text, int chunkSize)
@@ -97,18 +83,22 @@ namespace OllamaChat
 
         private async Task<List<string>> SearchRelevantChunksAsync(string query, ChatData outChatData, int topK = 3)
         {
-            List<(string Text, float[] Embedding)> _chunks = outChatData._chunks;
-            if (_chunks.Count == 0)
-            {
-                _chunks = await GetChanks(outChatData);
-            }
+            ChankData cd = await ChankData.GetChankData(mainWindow, chatData);
 
+            List < (string Text, string Folder, float[] Embedding)> chunks = await cd.GetChanks(mainWindow, chatData);
+
+
+            if (chunks.Count == 0)
+            {
+                return new List<string>();
+            }
+            //это вектор вопроса
             var queryEmbedding = await GetEmbeddingAsync(query);
             var similarities = new List<(float Score, string Text)>();
 
             
 
-            foreach (var (text, embedding) in outChatData._chunks)
+            foreach (var (text,folder, embedding) in chunks)
             {
                 float score = CosineSimilarity(queryEmbedding, embedding);
                 similarities.Add((score, text));
@@ -121,28 +111,9 @@ namespace OllamaChat
                 .ToList();
         }
 
-        public async Task<List<(string Text, float[] Embedding)>> GetChanks(ChatData outChatData, int chunkSize = 800)
-        {
-            outChatData._chunks.Clear(); // Очищаем предыдущую базу знаний (если нужно)
-            if(outChatData.ContextFromFiles.Length == 0)
-            {
-                GetContextFileData(outChatData);
-            }
-            if(outChatData.ContextFromFiles.Length == 0) { return outChatData._chunks; }
+        
 
-            var chunks = TextExtractor.ChunkText(outChatData.ContextFromFiles);
-            foreach (var chunk in chunks)
-            {
-                var embedding = await GetEmbeddingAsync(chunk);
-
-                // Добавляем информацию об источнике в текст чанка
-                string chunkWithMeta = $"[{"Документ X"}] {chunk}";
-                outChatData._chunks.Add((chunkWithMeta, embedding));
-            }
-            return outChatData._chunks;
-        }
-
-        private float CosineSimilarity(float[] vec1, float[] vec2)
+        public float CosineSimilarity(float[] vec1, float[] vec2)
         {
             if (vec1.Length != vec2.Length)
                 throw new ArgumentException("Vectors must have same length");
