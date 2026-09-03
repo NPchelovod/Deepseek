@@ -2,6 +2,7 @@
 using Microsoft.Win32; // Для OpenFileDialog
 using System;
 using System.Collections.Generic;
+using System.Diagnostics; // добавить в using
 using System.IO;
 using System.Net.Http;
 using System.Text;
@@ -10,7 +11,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using System.Diagnostics; // добавить в using
 
 namespace OllamaChat
 {
@@ -90,17 +90,26 @@ namespace OllamaChat
             string prompt = InputBox.Text.Trim();
             if (string.IsNullOrEmpty(prompt)) return;
 
-            
+
+            chatData.Errors = null;//обнуление для сбора ошибок
 
             // Добавляем сообщение пользователя в историю
-            chatData.ConversationHistory.Add($"User: {prompt}");
+            var sms = new ChatElement()
+            {
+                Senders = ESenders.User,
+                Id = chatData.Id,
+                Text = prompt,
+                StartTime = DateTime.Now,
+            };
+            chatData.ConversationHistory.Add(sms);
 
             // Отображаем сообщение пользователя
-            AddMessage($"\nВы_{chatData.Id}: ", prompt,chatData);
+            AddMessage($"\n{sms.GetAnswerText()}",chatData);
+
             InputBox.Clear();
 
             //удаляем прошлые вопросы 
-            DeleteAllMessage(chatData.inboxPath);
+            DeleteAllMessage(chatData.inboxPath, chatData);
 
             //сохранение данных
 

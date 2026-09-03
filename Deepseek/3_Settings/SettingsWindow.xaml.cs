@@ -125,7 +125,7 @@ namespace Deepseek
             {
                 _mainWindow.chatData._chunkSize = val;
             }
-            if (!string.IsNullOrEmpty(FileModelVectorII.Text) && int.TryParse(WordsSplitCountTextBox.Text, out int val2))
+            if (!string.IsNullOrEmpty(WordsCountTextBox.Text) && int.TryParse(WordsCountTextBox.Text, out int val2))
             {
                 _mainWindow.chatData.topK= val2;
             }

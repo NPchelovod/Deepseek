@@ -18,7 +18,12 @@ namespace OllamaChat
     {
         private async void InitializeSettings()
         {
-            if (File.Exists(chatData.settingsPath))
+            if (!File.Exists(chatData.settingsPath))
+            {
+                SaveFile();
+                return;
+            }
+            try
             {
                 string json = await File.ReadAllTextAsync(chatData.settingsPath);
                 var incomingChatData = JsonSerializer.Deserialize<ChatData>(json);
@@ -30,13 +35,22 @@ namespace OllamaChat
                 chatData.ChangeId();
                 foreach (var s in chatData.ConversationHistory)
                 {
-                    ChatBox.AppendText($"{s}\n\n");
+                    ChatBox.AppendText($"{s.GetAnswerText()}\n\n");
                 }
             }
-            else
+            catch (Exception ex) // На всякий случай
             {
-                SaveFile();
+                Debug.WriteLine($"Unexpected error: {ex.Message}");
+                try
+                {
+                    SaveFile();
+                }
+                catch
+                {
+                    Debug.WriteLine($"Unexpected error: {ex.Message}");
+                }
             }
+
         }
         private void ClearHistoryButton_Click(object sender, RoutedEventArgs e)
         {

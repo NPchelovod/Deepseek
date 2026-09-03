@@ -27,7 +27,7 @@ namespace OllamaChat
                     // обработка файла
                     await ProcessQuestionAdminFileAsync(filePath);
                 },
-                intervalMs: 3000
+                intervalMs: 2000
             );
             scanner.Start();
         }
@@ -40,7 +40,7 @@ namespace OllamaChat
                 
                 // Шаг 1: Дождаться, пока файл будет полностью записан.
                 // Простая задержка 100-200 мс. Для надёжности можно проверять стабильность размера файла.
-                await Task.Delay(150);
+                await Task.Delay(200);
 
                 // Шаг 2: Прочитать JSON из файла
                 string json = await File.ReadAllTextAsync(filePath);
@@ -55,11 +55,19 @@ namespace OllamaChat
                 // Шаг 3: Сформировать полный промпт с учётом контекста и истории
                 string fullPrompt = await BuildPromptWithHistory(incomingChatData);
 
-                // Шаг 4: Вызвать генерацию ответа (потоковую), передавая модель и другие параметры
-                string response = await GenerateTextStreamAsync(fullPrompt, incomingChatData);
+                if (incomingChatData.OnlyUseCommonContext && incomingChatData.UseCommonContext)
+                {
+                    //мы не входим во второй ИИ который требует ресурса
+                }
+                else
+                {
+                    // Шаг 4: Вызвать генерацию ответа (потоковую), передавая модель и другие параметры
+                    string response = await GenerateTextStreamAsync(fullPrompt, incomingChatData);
 
-                // Шаг 5: Добавить ответ в историю диалога
-                incomingChatData.ConversationHistory.Add($"AI: {response}");
+                    // Шаг 5: Добавить ответ в историю диалога
+                    incomingChatData.ConversationHistory.Add(new ChatElement { Text = response, Id= incomingChatData.Id, Senders=ESenders.AI_Chat });
+                    
+                }
 
                 // Шаг 6: Сохранить обновлённый ChatData в папку ответов
                 string outFilePath = Path.Combine(incomingChatData.outboxPath, incomingChatData.GetFileName);
@@ -91,28 +99,82 @@ namespace OllamaChat
             }
         }
 
-        private string GetQuestions(ChatData outChatData, int lastAnswers=1)//последний ответ пользователя
+
+        private string GetQuestions(ChatData outChatData)//последний ответ пользователя
         {
-            return null;
+            //возврат вопроса полного с учетом контекста
+            int sh = outChatData.UseCommonContext? outChatData.topK * outChatData._chunkSize:0;
+            int maxSimvols =Math.Max(2000, outChatData.SimvolsMax- sh);
+            int lastAnswers = outChatData.LastMessageInQuestion;
+
+            var list = outChatData.ConversationHistory;
+            ChatElement UsMessageCE = outChatData.ConversationHistory.Where(x => x.Id == chatData.Id && x.Senders == ESenders.User).LastOrDefault();
+            string question = "";
+            if (UsMessageCE != null)
+            {
+                question = UsMessageCE.Text;
+            }
+            if(string.IsNullOrEmpty(question))
+            {
+                return question;
+            }
+
+            int currentSimvols = question.Length;
+            int curA = 1;
+            for (int i = list.Count - 2; i >= 0; i--)
+            {
+                var item = list[i];
+                string text = item.GetAnswerText();
+
+                if(text.Length> maxSimvols- currentSimvols)
+                {
+                    if(item.Senders==ESenders.User)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+                if(curA> lastAnswers)
+                {
+                    break;
+                }
+
+                question = text+"." + question;
+                currentSimvols += text.Length;
+                curA++;
+                // работа с элементом
+            }
+            return question;
         }
 
         private async Task<string> BuildPromptWithHistory(ChatData outChatData)
         {
             var promptBuilder = new StringBuilder();
-            outChatData.PromptVectorAnswer = "";// на всякий случай
+
+            outChatData.AnswerPromptVector = null;// на всякий случай
+
             if (outChatData.ConversationHistory.Count == 0)
             { 
                 return promptBuilder.ToString();
             }
 
-            string question = outChatData.ConversationHistory[outChatData.ConversationHistory.Count - 1].Replace("User:","");
+            string question = GetQuestions(outChatData);
+            
+            if(string.IsNullOrEmpty(question) )
+            { 
+                return question; 
+            }
+
 
             // 1. Системная инструкция
-            promptBuilder.AppendLine("Ты — полезный ассистент. Отвечай обычным текстом, без LaTeX-разметки. Используй предоставленный контекст для ответа на вопросы.");
+            promptBuilder.AppendLine("Ты — полезный ассистент. Отвечай обычным текстом, без LaTeX-разметки.");
             if (outChatData.UseCommonContext)
             {
                 // 1. Ищем релевантные фрагменты
-                
+                promptBuilder.AppendLine("Используй предоставленный контекст для ответа на вопросы.");
                 var relevantChunks = await SearchRelevantChunksAsync(question, outChatData);
                 var context = string.Join("\n\n", relevantChunks.Select((c, i) => $"Документ {i + 1}:\n{c}"));
 
@@ -131,12 +193,23 @@ namespace OllamaChat
                 }
                 else
                 {
-                    outChatData.PromptVectorAnswer = context;
+                    outChatData.AnswerPromptVector = new ChatElement()
+                    {
+
+                        Id = outChatData.Id,
+                        StartTime = DateTime.Now,
+                        Senders = ESenders.AI_Prompt,
+                        Text = context,
+                        PromptQuestion = question,
+                    };
                 }
-                promptBuilder.AppendLine("=== КОНТЕКСТ ИЗ ФАЙЛОВ ===");
-                promptBuilder.AppendLine(context);
-                promptBuilder.AppendLine("=== КОНЕЦ КОНТЕКСТА ===");
-                promptBuilder.AppendLine();
+                if (!string.IsNullOrEmpty(context))
+                {
+                    promptBuilder.AppendLine("=== КОНТЕКСТ ИЗ ФАЙЛОВ ===");
+                    promptBuilder.AppendLine(context);
+                    promptBuilder.AppendLine("=== КОНЕЦ КОНТЕКСТА ===");
+                    promptBuilder.AppendLine();
+                }
 
             }
 
@@ -160,11 +233,11 @@ namespace OllamaChat
             //}
 
             // 3. История диалога (последние 10 сообщений)
-            int startIndex = Math.Max(0, outChatData.ConversationHistory.Count - 10);
-            for (int i = startIndex; i < outChatData.ConversationHistory.Count; i++)
-            {
-                promptBuilder.AppendLine(outChatData.ConversationHistory[i]);
-            }
+            //int startIndex = Math.Max(0, outChatData.ConversationHistory.Count - 10);
+            //for (int i = startIndex; i < outChatData.ConversationHistory.Count; i++)
+            //{
+            //    promptBuilder.AppendLine(outChatData.ConversationHistory[i]);
+            //}
 
             // 4. Маркер для ответа ИИ
             promptBuilder.Append("AI: ");

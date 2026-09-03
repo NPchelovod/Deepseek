@@ -23,8 +23,12 @@ namespace Deepseek
         public ContextWindow(MainWindow mainWindow)
         {
             InitializeComponent();
-
-            ContextTextBox.Text = mainWindow.chatData.PromptVectorAnswer;
+            if (mainWindow.chatData.AnswerPromptVector != null)
+            {
+                string answer = mainWindow.chatData.AnswerPromptVector.GetAnswerText();
+                answer += "\n" + mainWindow.chatData.AnswerPromptVector.GetTime;
+                ContextTextBox.Text = answer;
+            }
         }
     }
 }

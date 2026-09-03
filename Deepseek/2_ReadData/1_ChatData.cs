@@ -1,12 +1,57 @@
-﻿using System;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static System.Net.WebRequestMethods;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace Deepseek
 {
+    public enum ESenders
+    {
+        User=0,
+        AI_Chat,
+        AI_Prompt,
+        Errors
+    }
+    public class ChatElement
+    {
+        
+        public ESenders Senders { get; set; } = ESenders.User;
+        public int Id { get; set; } = 0;//id вопроса
+        public DateTime StartTime { get; set; } = DateTime.Now;
+        public DateTime EndTime { get; set; } = DateTime.Now;
+
+        public string Text { get; set; } = "";
+        public string PromptQuestion { get; set; } = "";//вопрос на который ИИ ответила текстом релевантным
+        public string GetAnswerText()
+        {
+            string answer = $"\n{Text}";
+            switch (Senders)
+            {
+                case ESenders.User:
+                    answer = "Вы #" + Id + ":" + answer;
+                    break;
+                case ESenders.AI_Chat:
+                    answer = "AI #" + Id + ":" + answer;
+                    break;
+                 case ESenders.AI_Prompt:
+                    answer = "Вы #" + Id + ":"+$"\n{PromptQuestion}" + "\nAI #" + Id + ":" + answer;
+                    break;
+                default:
+                    break;
+            }
+            return answer;
+            //Senders == ESenders.User ? "Вы #" : "AI #") +Id + ":" + $"\n{Text}";
+        }
+       
+
+        public string GetTime =>   $"AI Time {(int)(EndTime - StartTime).TotalSeconds} сек";
+
+        
+    }
 
     public class ChatData
     {
@@ -35,17 +80,24 @@ namespace Deepseek
         public int SimvolsMax { get; set; } = 40000;
         public int WordMax { get => SimvolsMax / 6; set => SimvolsMax = value * 6; }
         public bool UseCommonContext { get; set; } = false;// вгружать ли в себя файлы
+
+        public bool OnlyUseCommonContext { get; set; } = false;//не использовать ИИ-чат
+
         public bool IsAdminCheckBox { get; set; } = false;
 
-        public List<string> ConversationHistory { get; set; } = new List<string>(); // История диалога
+        public List<ChatElement> ConversationHistory { get; set; } = new List<ChatElement>(); // История диалога
 
-        public string PromptVectorAnswer { get; set; } = "";// ответ промежуточной ИИ на вопрос
+        public ChatElement AnswerPromptVector { get; set; } =null;// ответ промежуточной ИИ на вопрос
+
+        public ChatElement Errors { get; set; } = null;
+        //public ChatElement 
+
         //public string ContextFromFiles { get; set; } = "";
 
         public string promptFolder { get; set; } = @"Y:\ИИ\_БазаДанных"; // можно указать начальную папку
 
         public string promptFolderVectors  => Path.Combine(promptFolder, "_Вектора"); // получение папки ветора
-        public string nameVectors=> Path.Combine(promptFolderVectors, "Vectors.json");//уникальная версия для настроек
+        public string nameVectors => Path.Combine(promptFolderVectors, $"{EmbeddingModel}_Vectors.json");//уникальная версия для настроек
         public DateTime Timestamp { get; set; }
 
         public string inboxPath { get; set; } = @"Y:\ИИ\_Разработчику\_Вопросы";
@@ -84,11 +136,12 @@ namespace Deepseek
         public int _chunkSize { get; set; } = 900;//слов в одном текстве
         public int topK { get; set; } = 5;//выборка сообщений
 
-
+        public int LastMessageInQuestion { get; set; } = 1;//сколько последних сообщений в контекст вводить
         public void Clear()
         {
             ConversationHistory.Clear();
-            PromptVectorAnswer = "";
+            Errors = null;
+            AnswerPromptVector = null;
         }
     }
 

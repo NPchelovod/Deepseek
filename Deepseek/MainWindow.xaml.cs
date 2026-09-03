@@ -113,11 +113,28 @@ namespace OllamaChat
             var sW = new ContextWindow(this);
             sW.Show();
         }
-       
 
 
+        private void RollbackSettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Логика восстановления из резервной копии (например, загрузка .bak файла)
 
+            chatData = new ChatData();
+            ClearHistoryButton_Click(sender, e);
 
+        }
+
+        private void QuoteFromKnowledgeBaseCheckBox_Changed(object sender, RoutedEventArgs e)
+        {
+            // Здесь логика: например, сохранить состояние или обновить контекст
+            bool useQuotes = QuoteFromKnowledgeBaseCheckBox.IsChecked ?? false;
+            chatData.OnlyUseCommonContext = useQuotes;
+            if(chatData.OnlyUseCommonContext)
+            {
+                UseContextCheckBox.IsChecked = true;
+            }
+            // Например: chatData.UseQuotesFromKB = useQuotes;
+        }
 
 
 
@@ -134,13 +151,12 @@ namespace OllamaChat
 
 
 
-        private void AddMessage(string sender, string message, ChatData chatData)
+        private void AddMessage(string message, ChatData chatData)
         {
             // Очищаем сообщение от тегов <think> и служебных префиксов
             string cleanedMessage = Regex.Replace(message, @"<think>.*?</think>", "", RegexOptions.Singleline);
-            cleanedMessage = cleanedMessage.Replace("AI:", "").Replace("Вы:", "").Replace($"_{chatData.Id.ToString()}", "").Trim();
-
-            ChatBox.AppendText($"{sender}{cleanedMessage}\n\n");
+            
+            ChatBox.AppendText($"{message}\n");
             ChatBox.ScrollToEnd();
         }
 

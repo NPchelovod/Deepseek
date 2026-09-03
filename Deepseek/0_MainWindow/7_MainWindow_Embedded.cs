@@ -35,7 +35,7 @@ namespace OllamaChat
             response.EnsureSuccessStatusCode();
 
             var responseString = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"Embedding response: {responseString}");
+            // Console.WriteLine($"Embedding response: {responseString}");
             using JsonDocument doc = JsonDocument.Parse(responseString);
             JsonElement root = doc.RootElement;
 
@@ -86,7 +86,10 @@ namespace OllamaChat
         {
             int topK = outChatData.topK;
             ChankData cd = await ChankData.GetChankData(mainWindow, chatData);
-
+            if(cd==null)
+            {
+                throw new ArgumentException("ChankData cd  не найдена");
+            }
             List <ChunkInfo> chunks = await cd.GetChanks(mainWindow, chatData);
 
 

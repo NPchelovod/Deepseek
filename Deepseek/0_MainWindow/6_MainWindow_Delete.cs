@@ -21,12 +21,14 @@ namespace OllamaChat
         {
 
         }
-        public void DeleteAllMessage(string inboxPath)
+        public void DeleteAllMessage(string inboxPath, ChatData outChat)
         {
             if (!Directory.Exists(inboxPath))
+            {
                 return;
+            }
 
-            var files = Directory.GetFiles(inboxPath, $"{chatData.GetFilePrefix}*"); // шаблон: ChatData_*
+            var files = Directory.GetFiles(inboxPath, $"{outChat.GetFilePrefix}*"); // шаблон: ChatData_*
 
             foreach (var file in files)
             {
