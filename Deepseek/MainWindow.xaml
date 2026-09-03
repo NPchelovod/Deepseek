@@ -134,15 +134,7 @@
                 </StackPanel>
 
                 <!-- 2. Макс. токенов -->
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Grid.Column="1" Margin="20,0,10,0">
-                    <TextBlock Text="Макс. токенов/слов:" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                    <TextBox x:Name="MaxTokensTextBox"
-                             Width="80"
-                             VerticalAlignment="Center"
-                             Text="4000"
-                             TextAlignment="Right"
-                             TextChanged="MaxTokensTextBox_TextChanged"/>
-                </StackPanel>
+                
 
                 <!-- 3. Галочка "Я главный" -->
                 <StackPanel Orientation="Horizontal" Grid.Column="2" 

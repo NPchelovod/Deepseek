@@ -42,10 +42,10 @@ namespace Deepseek
             FileModelVectorII.Text = _mainWindow.chatData.EmbeddingModel;
             OllamaUrlVectorTextBox.Text = _mainWindow.chatData.OllamaApiUrlEmbed;
 
-            WordsSplitCountTextBox.Text = _mainWindow.chatData._chunkSize.ToString();
+            WordsSplitCountTextBox.Text = _mainWindow.chatData._chunkWordSize.ToString();
             WordsCountTextBox.Text = _mainWindow.chatData.topK.ToString();
 
-            WordsCountMaxTextBox.Text = _mainWindow.chatData.WordMax.ToString();
+            WordsCountMaxTextBox.Text = _mainWindow.chatData.WordVoprosMax.ToString();
 
         }
         // Обработчик кнопки "Обзор..." для поля "Папка входящих"
@@ -123,7 +123,7 @@ namespace Deepseek
             }
             if (!string.IsNullOrEmpty(FileModelVectorII.Text) && int.TryParse( WordsSplitCountTextBox.Text, out int val))
             {
-                _mainWindow.chatData._chunkSize = val;
+                _mainWindow.chatData._chunkWordSize = val;
             }
             if (!string.IsNullOrEmpty(WordsCountTextBox.Text) && int.TryParse(WordsCountTextBox.Text, out int val2))
             {
@@ -132,7 +132,7 @@ namespace Deepseek
 
             if (!string.IsNullOrEmpty(WordsCountMaxTextBox.Text) && int.TryParse(WordsCountMaxTextBox.Text, out int val3))
             {
-                _mainWindow.chatData.WordMax = val3;
+                _mainWindow.chatData.WordVoprosMax = val3;
             }
            
             Close();

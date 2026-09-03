@@ -115,7 +115,15 @@ namespace OllamaChat
 
             // Сохраняем вопрос в папку inbox для администратора
             string json = JsonSerializer.Serialize(chatData, new JsonSerializerOptions { IncludeFields = true, WriteIndented = true });
-            await File.WriteAllTextAsync(chatData.FullFilePathVopros, json);
+
+            if (Directory.Exists(chatData.FullFilePathVopros))
+            {
+                await File.WriteAllTextAsync(chatData.FullFilePathVopros, json);
+            }
+            else
+            {
+              
+            }
 
         }
     }

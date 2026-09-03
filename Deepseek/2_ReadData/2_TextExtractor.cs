@@ -130,7 +130,189 @@ namespace Deepseek
 
             return chunks;
         }
+        public static List<string> ChunkTextPoWords(string text, int maxWords = 800, int overlapWords = 100)
+        {
+            var chunks = new List<string>();
+            if (string.IsNullOrWhiteSpace(text)) return chunks;
 
+            // Разбиваем на абзацы (сохраняем пустые строки? нет, удаляем пустые)
+            var paragraphs = text.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries)
+                                 .Select(p => p.Trim())
+                                 .Where(p => p.Length > 0)
+                                 .ToList();
+
+            var currentWords = new List<string>();
+            int currentWordCount = 0;
+
+            foreach (var paragraph in paragraphs)
+            {
+                // Разбиваем абзац на слова
+                var words = paragraph.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
+                int paragraphWordCount = words.Count;
+
+                // Если абзац целиком помещается в чанк
+                if (currentWordCount + paragraphWordCount <= maxWords)
+                {
+                    currentWords.AddRange(words);
+                    currentWordCount += paragraphWordCount;
+                }
+                else
+                {
+                    // Если абзац не помещается, сохраняем текущий чанк
+                    if (currentWords.Count > 0)
+                    {
+                        chunks.Add(string.Join(" ", currentWords));
+                        // Добавляем перекрытие (последние overlapWords слов)
+                        currentWords.Clear();
+                        if (overlapWords > 0 && chunks.Count > 0)
+                        {
+                            var lastChunk = chunks[^1];
+                            var lastWords = lastChunk.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
+                            int start = Math.Max(0, lastWords.Count - overlapWords);
+                            currentWords = lastWords.Skip(start).ToList();
+                            currentWordCount = currentWords.Count;
+                        }
+                    }
+
+                    // Если сам абзац больше maxWords, режем по предложениям
+                    if (paragraphWordCount > maxWords)
+                    {
+                        // Разбиваем абзац на предложения
+                        var sentences = Regex.Split(paragraph, @"(?<=[.!?])\s+")
+                                             .Select(s => s.Trim())
+                                             .Where(s => s.Length > 0)
+                                             .ToList();
+
+                        foreach (var sentence in sentences)
+                        {
+                            var sentenceWords = sentence.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
+                            int sentenceWordCount = sentenceWords.Count;
+
+                            if (currentWordCount + sentenceWordCount <= maxWords)
+                            {
+                                currentWords.AddRange(sentenceWords);
+                                currentWordCount += sentenceWordCount;
+                            }
+                            else
+                            {
+                                // Если предложение не помещается, сохраняем чанк
+                                if (currentWords.Count > 0)
+                                {
+                                    chunks.Add(string.Join(" ", currentWords));
+                                    currentWords.Clear();
+                                    if (overlapWords > 0 && chunks.Count > 0)
+                                    {
+                                        var lastChunk = chunks[^1];
+                                        var lastWords = lastChunk.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
+                                        int start = Math.Max(0, lastWords.Count - overlapWords);
+                                        currentWords = lastWords.Skip(start).ToList();
+                                        currentWordCount = currentWords.Count;
+                                    }
+                                }
+
+                                // Если предложение длиннее maxWords, режем по словам
+                                if (sentenceWordCount > maxWords)
+                                {
+                                    // Жёсткое разрезание по словам
+                                    foreach (var word in sentenceWords)
+                                    {
+                                        if (currentWordCount + 1 > maxWords)
+                                        {
+                                            chunks.Add(string.Join(" ", currentWords));
+                                            currentWords.Clear();
+                                            if (overlapWords > 0 && chunks.Count > 0)
+                                            {
+                                                var lastChunk = chunks[^1];
+                                                var lastWords = lastChunk.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
+                                                int start = Math.Max(0, lastWords.Count - overlapWords);
+                                                currentWords = lastWords.Skip(start).ToList();
+                                                currentWordCount = currentWords.Count;
+                                            }
+                                        }
+                                        currentWords.Add(word);
+                                        currentWordCount++;
+                                    }
+                                }
+                                else
+                                {
+                                    // Начинаем новый чанк с этого предложения
+                                    currentWords = sentenceWords;
+                                    currentWordCount = sentenceWordCount;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Абзац короче maxWords, но не влез в текущий чанк — начинаем новый чанк с этого абзаца
+                        currentWords = words;
+                        currentWordCount = paragraphWordCount;
+                    }
+                }
+            }
+
+            if (currentWords.Count > 0)
+                chunks.Add(string.Join(" ", currentWords));
+
+            return chunks;
+        }
+
+        public static List<string> ChunkTextByWords(
+        string text,
+        int maxWords = 800,
+        double overlapPercent = 15.0)
+        {
+            var chunks = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(text))
+                return chunks;
+
+            if (maxWords <= 0)
+                throw new ArgumentOutOfRangeException(
+                    nameof(maxWords),
+                    "Размер чанка должен быть больше нуля.");
+
+            if (overlapPercent < 0 || overlapPercent >= 100)
+                throw new ArgumentOutOfRangeException(
+                    nameof(overlapPercent),
+                    "Процент перекрытия должен быть от 0 до 99.");
+
+            // 15% от maxWords:
+            // 800 * 0.15 = 120 слов
+            int overlapWords = (int)Math.Round(
+                maxWords * overlapPercent / 100.0,
+                MidpointRounding.AwayFromZero);
+
+            int step = maxWords - overlapWords;
+
+            if (step <= 0)
+                throw new ArgumentException(
+                    "Размер перекрытия должен быть меньше размера чанка.");
+
+            // Разбиваем текст на слова независимо от количества пробелов и переводов строк
+            string[] words = text
+                .Split(
+                    new[] { ' ', '\t', '\r', '\n' },
+                    StringSplitOptions.RemoveEmptyEntries);
+
+            for (int start = 0; start < words.Length; start += step)
+            {
+                int count = Math.Min(maxWords, words.Length - start);
+
+                string chunk = string.Join(
+                    " ",
+                    words.Skip(start).Take(count));
+
+                if (!string.IsNullOrWhiteSpace(chunk))
+                    chunks.Add(chunk);
+
+                // Последний чанк уже содержит остаток текста
+                if (start + count >= words.Length)
+                    break;
+            }
+
+            return chunks;
+        }
         public static List<string> GetSupportedFiles(string directoryPath, bool vlog=false)
         {
             string[] extensions = { ".txt", ".pdf", ".docx" };

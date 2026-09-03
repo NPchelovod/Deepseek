@@ -50,7 +50,7 @@ namespace Deepseek
 
         public string GetTime =>   $"AI Time {(int)(EndTime - StartTime).TotalSeconds} сек";
 
-        
+        public float[] Embedding { get; set; } = null; // можно заполнять при добавлении сообщения, чтобы определять косинусово сходство
     }
 
     public class ChatData
@@ -62,7 +62,7 @@ namespace Deepseek
         public ChatData(ChatData chatData)
         {
             ModelII = chatData.ModelII;
-            SimvolsMax = chatData.SimvolsMax;
+            SimvolsVoprosMax = chatData.SimvolsVoprosMax;
             UseCommonContext = chatData.UseCommonContext;
             IsAdminCheckBox = chatData.IsAdminCheckBox;
             promptFolder = chatData.promptFolder;
@@ -77,8 +77,8 @@ namespace Deepseek
         public string ModelII { get; set; } = "qwen2.5:7b-instruct-q4_K_M";//"gemma2:9b",//"qwen2.5:32b-instruct-q4_K_M",//"deepseek-r1:8b",
 
         public string EmbeddingModel = "qwen3-embedding:8b";// "nomic-embed-text-v2-moe";// qwen3-embedding:8b";
-        public int SimvolsMax { get; set; } = 40000;
-        public int WordMax { get => SimvolsMax / 6; set => SimvolsMax = value * 6; }
+        public int SimvolsVoprosMax { get; set; } = 4000;
+        public int WordVoprosMax { get => SimvolsVoprosMax / 6; set => SimvolsVoprosMax = value * 6; }
         public bool UseCommonContext { get; set; } = false;// вгружать ли в себя файлы
 
         public bool OnlyUseCommonContext { get; set; } = false;//не использовать ИИ-чат
@@ -97,7 +97,7 @@ namespace Deepseek
         public string promptFolder { get; set; } = @"Y:\ИИ\_БазаДанных"; // можно указать начальную папку
 
         public string promptFolderVectors  => Path.Combine(promptFolder, "_Вектора"); // получение папки ветора
-        public string nameVectors => Path.Combine(promptFolderVectors, $"{EmbeddingModel}_Vectors.json");//уникальная версия для настроек
+        public string nameVectors => Path.Combine(promptFolderVectors, $"{EmbeddingModel}_D{_chunkWordSize}x{topK}_Vectors.json");//уникальная версия для настроек
         public DateTime Timestamp { get; set; }
 
         public string inboxPath { get; set; } = @"Y:\ИИ\_Разработчику\_Вопросы";
@@ -133,7 +133,7 @@ namespace Deepseek
         }
 
 
-        public int _chunkSize { get; set; } = 900;//слов в одном текстве
+        public int _chunkWordSize { get; set; } = 900;//слов в одном текстве Средние чанки: 512–1024 токена (~400–800 слов).
         public int topK { get; set; } = 5;//выборка сообщений
 
         public int LastMessageInQuestion { get; set; } = 1;//сколько последних сообщений в контекст вводить

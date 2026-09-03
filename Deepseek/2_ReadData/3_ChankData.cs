@@ -61,22 +61,25 @@ namespace Deepseek
                     if (_documents.Contains(fileText.FileName))
                         continue;
 
-                    var chunks = TextExtractor.ChunkText(fileText.Text, chatData._chunkSize);
+                    //!!!! Внимание важная вещь
+                    var chunks = TextExtractor.ChunkTextByWords(fileText.Text, chatData._chunkWordSize);
 
                     EmbeddedModel =chatData.EmbeddingModel;//парамтеры по которым мы создавали нашу модель
-
-                    foreach (var chunk in chunks)
-                    {
-                        var embedding = await mainWindow.GetEmbeddingAsync(chunk, chatData);
-                        string fileName = Path.GetFileName(fileText.FileName);
-                        string chunkWithMeta = $"[{fileName}] {chunk}";
-                        _chunks.Add(new ChunkInfo
-                        {
-                            Text = chunkWithMeta,
-                            Folder = fileText.FileName,
-                            Embedding = embedding
-                        });
-                    }
+                    string fileName = Path.GetFileName(fileText.FileName);
+                    var addChanks=await mainWindow.GetAllEmbeddingsBatchAsync(chunks, chatData, fileName);
+                    _chunks.AddRange(addChanks);
+                    //foreach (var chunk in chunks)
+                    //{
+                    //    var embedding = await mainWindow.GetEmbeddingAsync(chunk, chatData);
+                        
+                    //    string chunkWithMeta = $"[{fileName}] {chunk}";
+                    //    _chunks.Add(new ChunkInfo
+                    //    {
+                    //        Text = chunkWithMeta,
+                    //        Folder = fileText.FileName,
+                    //        Embedding = embedding
+                    //    });
+                    //}
                     _documents.Add(fileText.FileName);
                 }
             }

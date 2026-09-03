@@ -68,7 +68,63 @@ namespace OllamaChat
             throw new Exception("Embedding not found in response");
         }
 
-       
+
+        public async Task<List<ChunkInfo>> GetAllEmbeddingsBatchAsync(List<string> chunks, ChatData outChatData, string fileName)
+        {
+            var answer = new List<ChunkInfo>();
+            int batchSize = 10;
+            for (int i = 0; i < chunks.Count; i += batchSize)
+            {
+                var batch = chunks.Skip(i).Take(batchSize).ToList();
+                var embeddings = await mainWindow.GetEmbeddingsBatchAsync(batch, chatData);
+                for (int j = 0; j < batch.Count; j++)
+                {
+                    string chunk = batch[j];
+                    
+                    string chunkWithMeta = $"[{fileName}] {chunk}";
+                    answer.Add(new ChunkInfo
+                    {
+                        Text = chunkWithMeta,
+                        Folder = fileName,
+                        Embedding = embeddings[j]
+                    });
+                }
+            }
+            return answer;
+        }
+
+        public async Task<List<float[]>> GetEmbeddingsBatchAsync(List<string> texts, ChatData outChatData)
+        {
+            var requestData = new
+            {
+                model = outChatData.EmbeddingModel,
+                input = texts  // массив строк
+            };
+            var json = JsonSerializer.Serialize(requestData);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync(outChatData.OllamaApiUrlEmbed, content);
+            response.EnsureSuccessStatusCode();
+
+            var responseString = await response.Content.ReadAsStringAsync();
+            using JsonDocument doc = JsonDocument.Parse(responseString);
+            JsonElement root = doc.RootElement;
+
+            if (root.TryGetProperty("embeddings", out JsonElement embeddingsElement))
+            {
+                var result = new List<float[]>();
+                foreach (var emb in embeddingsElement.EnumerateArray())
+                {
+                    var vector = new List<float>();
+                    foreach (var item in emb.EnumerateArray())
+                        vector.Add(item.GetSingle());
+                    result.Add(vector.ToArray());
+                }
+                return result;
+            }
+            throw new Exception("Embeddings not found in response");
+        }
+
 
 
         private List<string> SplitIntoChunks(string text, int chunkSize)
@@ -120,6 +176,7 @@ namespace OllamaChat
 
         public float CosineSimilarity(float[] vec1, float[] vec2)
         {
+            if(vec1==null || vec2 == null) { return 1; }
             if (vec1.Length != vec2.Length)
                 throw new ArgumentException("Vectors must have same length");
 

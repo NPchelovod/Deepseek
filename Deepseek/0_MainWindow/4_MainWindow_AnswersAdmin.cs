@@ -100,54 +100,69 @@ namespace OllamaChat
         }
 
 
-        private string GetQuestions(ChatData outChatData)//последний ответ пользователя
+        private async Task<string> GetQuestions(ChatData outChatData)//последний ответ пользователя
         {
-            //возврат вопроса полного с учетом контекста
-            int sh = outChatData.UseCommonContext? outChatData.topK * outChatData._chunkSize:0;
-            int maxSimvols =Math.Max(2000, outChatData.SimvolsMax- sh);
-            int lastAnswers = outChatData.LastMessageInQuestion;
-
-            var list = outChatData.ConversationHistory;
+            int MaxPastAnswers = outChatData.LastMessageInQuestion;
             ChatElement UsMessageCE = outChatData.ConversationHistory.Where(x => x.Id == chatData.Id && x.Senders == ESenders.User).LastOrDefault();
             string question = "";
             if (UsMessageCE != null)
             {
                 question = UsMessageCE.Text;
             }
-            if(string.IsNullOrEmpty(question))
+            if (MaxPastAnswers<1 || string.IsNullOrEmpty(question))
             {
                 return question;
             }
 
+            //иначе возвращаем имбединг модели
+            float[] questionEmbedding=null;
+            if (outChatData.UseCommonContext)
+            {
+                //заполняем косинусовое сходство
+                questionEmbedding = await GetEmbeddingAsync(question, outChatData); // ваш метод
+                UsMessageCE.Embedding = questionEmbedding;
+
+            }
+            int maxSimvols= outChatData.SimvolsVoprosMax;
+
+            //int maxSimvols = Math.Max(2000, outChatData.SimvolsVoprosMax -
+            //         (outChatData.UseCommonContext ? outChatData.topK * outChatData._chunkWordSize : 0));
             int currentSimvols = question.Length;
-            int curA = 1;
+            var selectedMessages = new List<string>();
+            double threshold = 0.7; // подберите экспериментально
+
+            var list = outChatData.ConversationHistory;
+            // Идём от предпоследнего сообщения назад
             for (int i = list.Count - 2; i >= 0; i--)
             {
                 var item = list[i];
-                string text = item.GetAnswerText();
+                if (currentSimvols >= maxSimvols) break;
 
-                if(text.Length> maxSimvols- currentSimvols)
+                float[] msgEmbedding = item.Embedding;
+                if (msgEmbedding == null && outChatData.UseCommonContext)
                 {
-                    if(item.Senders==ESenders.User)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        continue;
-                    }
+                    msgEmbedding = await GetEmbeddingAsync(item.Text, outChatData);
+                    item.Embedding = msgEmbedding; // кэшируем
                 }
-                if(curA> lastAnswers)
+
+                double similarity = CosineSimilarity(questionEmbedding, msgEmbedding);
+                if (similarity < threshold) continue; // пропускаем нерелевантные
+
+                string text = item.GetAnswerText();
+                if (currentSimvols + text.Length > maxSimvols)
                 {
+                    // Можно обрезать или остановиться
                     break;
                 }
-
-                question = text+"." + question;
+                selectedMessages.Insert(0, text);
                 currentSimvols += text.Length;
-                curA++;
-                // работа с элементом
             }
-            return question;
+
+            if (selectedMessages.Count == 0)
+                return question;
+
+            return string.Join("\n", selectedMessages) + "\n" + question;
+        
         }
 
         private async Task<string> BuildPromptWithHistory(ChatData outChatData)
@@ -161,7 +176,7 @@ namespace OllamaChat
                 return promptBuilder.ToString();
             }
 
-            string question = GetQuestions(outChatData);
+            string question =await GetQuestions(outChatData);
             
             if(string.IsNullOrEmpty(question) )
             { 
@@ -186,7 +201,7 @@ namespace OllamaChat
                     
 
                    // Вы можете настроить N в зависимости от модели и её контекстного окна.
-                        int maxContextLength = outChatData.SimvolsMax;
+                        int maxContextLength = outChatData.SimvolsVoprosMax;
                     context = context.Length > maxContextLength
                         ? context.Substring(0, maxContextLength)
                         : context;
@@ -221,7 +236,7 @@ namespace OllamaChat
             //{
             //    // Берём первые N символов, чтобы не превысить лимит модели.
             //    // Вы можете настроить N в зависимости от модели и её контекстного окна.
-            //    int maxContextLength = outChatData.SimvolsMax;
+            //    int maxContextLength = outChatData.SimvolsVoprosMax;
             //    string context = outChatData.ContextFromFiles.Length > maxContextLength
             //        ? outChatData.ContextFromFiles.Substring(0, maxContextLength)
             //        : outChatData.ContextFromFiles;

@@ -47,7 +47,7 @@ namespace OllamaChat
                     break;
                 }
             }
-            MaxTokensTextBox.Text = chatData.SimvolsMax.ToString();
+            //MaxTokensTextBox.Text = chatData.SimvolsVoprosMax.ToString();
             IsAdminCheckBox.IsChecked = chatData.IsAdminCheckBox;
         }
 
@@ -63,18 +63,18 @@ namespace OllamaChat
         {
             if (_suppressMaxTokensTextChanged) return;
             if(chatData==null) return;
-            if (int.TryParse(MaxTokensTextBox.Text, out int value) && value > 0)
-            {
-                chatData.SimvolsMax = value;
-            }
-            else
-            {
-                // Если введено некорректное значение, возвращаем предыдущее корректное
-                _suppressMaxTokensTextChanged = true;
-                MaxTokensTextBox.Text = chatData.SimvolsMax.ToString();
-                MaxTokensTextBox.CaretIndex = MaxTokensTextBox.Text.Length;
-                _suppressMaxTokensTextChanged = false;
-            }
+            //if (int.TryParse(MaxTokensTextBox.Text, out int value) && value > 0)
+            //{
+            //    chatData.WordVoprosMax = value;
+            //}
+            //else
+            //{
+            //    // Если введено некорректное значение, возвращаем предыдущее корректное
+            //    _suppressMaxTokensTextChanged = true;
+            //   // MaxTokensTextBox.Text = chatData.WordVoprosMax.ToString();
+            //   // MaxTokensTextBox.CaretIndex = MaxTokensTextBox.Text.Length;
+            //    _suppressMaxTokensTextChanged = false;
+            //}
         }
         // Обработчик выбора модели в ComboBox
         private void ModelComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -174,7 +174,7 @@ namespace OllamaChat
                     model = outChatData.ModelII,
                     prompt = prompt,
                     temperature = 0.7,
-                    max_tokens = outChatData.SimvolsMax,
+                    max_tokens = Math.Min(3000, outChatData.WordVoprosMax*2),//max_tokens_для_ответа = лимит_контекста - токены_в_промпте 1024 безопасный вариант
                     stream = true,
                    // keep_alive = "10h"   // или "24h", "-1" для постоянного удержания
                 };
