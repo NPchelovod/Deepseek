@@ -131,12 +131,22 @@ namespace Deepseek
             return chunks;
         }
 
-        public static List<string> Folders (string directoryPath)
+        public static List<string> GetSupportedFiles(string directoryPath, bool vlog=false)
         {
             string[] extensions = { ".txt", ".pdf", ".docx" };
-            var files = Directory.EnumerateFiles(directoryPath, "*.*", SearchOption.AllDirectories)
-                                 .Where(f => extensions.Contains(Path.GetExtension(f).ToLower())).ToList();
-            return files;
+            if (vlog)
+            {
+                var files = Directory.EnumerateFiles(directoryPath, "*.*", SearchOption.AllDirectories)
+                                     .Where(f => extensions.Contains(Path.GetExtension(f).ToLower())).ToList();
+                return files;
+            }
+            else
+            {
+                var files = Directory.EnumerateFiles(directoryPath, "*.*", SearchOption.TopDirectoryOnly)
+               .Where(f => extensions.Contains(Path.GetExtension(f).ToLower()))
+               .ToList();
+                return files;
+            }
 
         }
 
@@ -153,7 +163,7 @@ namespace Deepseek
                 Console.WriteLine($"Папка не найдена: {directoryPath}");
                 return result;
             }
-            var files = Folders(directoryPath);
+            var files = GetSupportedFiles(directoryPath);
             return ExtractAllText(files);
         }
 

@@ -33,6 +33,7 @@ namespace Deepseek
 
         public string EmbeddingModel = "nomic-embed-text-v2-moe";// qwen3-embedding:8b";
         public int SimvolsMax { get; set; } = 40000;
+        public int WordMax { get => SimvolsMax / 6; set => SimvolsMax = value * 6; }
         public bool UseCommonContext { get; set; } = false;// вгружать ли в себя файлы
         public bool IsAdminCheckBox { get; set; } = false;
 
@@ -58,7 +59,7 @@ namespace Deepseek
         // Хранилище чанков: текст + вектор
         //public List<(string Text, float[] Embedding)> _chunks = new();
 
-        public  string settingsPath=> Path.Combine(Path.GetTempPath(), "ChatData.json");//уникальная версия для настроек
+        public  string settingsPath=> Path.Combine(Path.GetTempPath(), "ChatData_"+userName+".json");//уникальная версия для настроек
 
         public string userName => Environment.UserName;
         public void ChangeId()
@@ -81,8 +82,14 @@ namespace Deepseek
 
 
         public int _chunkSize { get; set; } = 900;//слов в одном текстве
-        public int topK { get; set; } = 4;//выборка сообщений
+        public int topK { get; set; } = 5;//выборка сообщений
 
+
+        public void Clear()
+        {
+            ConversationHistory.Clear();
+            PromptVectorAnswer = "";
+        }
     }
 
 

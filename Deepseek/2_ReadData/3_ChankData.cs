@@ -91,7 +91,7 @@ namespace Deepseek
                 _documents.Clear();
             }
             string folderData = chatData.promptFolder;
-            var files = TextExtractor.Folders(folderData).ToHashSet();
+            var files = TextExtractor.GetSupportedFiles(folderData).ToHashSet();
             //находим разницу - уделенный документ
             var missingInDocuments = _documents.Except(files).ToList();
 

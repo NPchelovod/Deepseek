@@ -35,8 +35,17 @@ namespace Deepseek
             OutboxPathTextBox.Text = _mainWindow.chatData.outboxPath;
             ArchivePathTextBox.Text = _mainWindow.chatData.archivePath;
             PromptFolderTextBox.Text = _mainWindow.chatData.promptFolder;
-            OllamaUrlTextBox.Text = _mainWindow.chatData.OllamaApiUrl;
+            
             FileModelII.Text= _mainWindow.chatData.ModelII;
+            OllamaUrlTextBox.Text = _mainWindow.chatData.OllamaApiUrl;
+
+            FileModelVectorII.Text = _mainWindow.chatData.EmbeddingModel;
+            OllamaUrlVectorTextBox.Text = _mainWindow.chatData.OllamaApiUrlEmbed;
+
+            WordsSplitCountTextBox.Text = _mainWindow.chatData._chunkSize.ToString();
+            WordsCountTextBox.Text = _mainWindow.chatData.topK.ToString();
+
+            WordsCountMaxTextBox.Text = _mainWindow.chatData.WordMax.ToString();
 
         }
         // Обработчик кнопки "Обзор..." для поля "Папка входящих"
@@ -104,6 +113,28 @@ namespace Deepseek
             {
                 _mainWindow.chatData.ModelII = FileModelII.Text;
             }
+            if (!string.IsNullOrEmpty(FileModelVectorII.Text))
+            {
+                 _mainWindow.chatData.EmbeddingModel= FileModelVectorII.Text;
+            }
+            if (!string.IsNullOrEmpty(OllamaUrlVectorTextBox.Text))
+            {
+                _mainWindow.chatData.OllamaApiUrlEmbed= OllamaUrlVectorTextBox.Text;
+            }
+            if (!string.IsNullOrEmpty(FileModelVectorII.Text) && int.TryParse( WordsSplitCountTextBox.Text, out int val))
+            {
+                _mainWindow.chatData._chunkSize = val;
+            }
+            if (!string.IsNullOrEmpty(FileModelVectorII.Text) && int.TryParse(WordsSplitCountTextBox.Text, out int val2))
+            {
+                _mainWindow.chatData.topK= val2;
+            }
+
+            if (!string.IsNullOrEmpty(WordsCountMaxTextBox.Text) && int.TryParse(WordsCountMaxTextBox.Text, out int val3))
+            {
+                _mainWindow.chatData.WordMax = val3;
+            }
+           
             Close();
         }
         private void CancelButton_Click(object sender, RoutedEventArgs e)

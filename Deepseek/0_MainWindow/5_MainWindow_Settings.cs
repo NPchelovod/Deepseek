@@ -41,12 +41,15 @@ namespace OllamaChat
         private void ClearHistoryButton_Click(object sender, RoutedEventArgs e)
         {
             //очистка истории
-            chatData = new ChatData(chatData);
+            //chatData = new ChatData(chatData);
+            chatData.Clear();
             ChatBox.Clear();
             if (File.Exists(chatData.settingsPath))
             {
                 File.Delete(chatData.settingsPath);
             }
+            //сохранение файла
+            SaveFile();
         }
 
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
