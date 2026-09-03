@@ -31,7 +31,7 @@ namespace Deepseek
 
         public string ModelII { get; set; } = "qwen2.5:7b-instruct-q4_K_M";//"gemma2:9b",//"qwen2.5:32b-instruct-q4_K_M",//"deepseek-r1:8b",
 
-        public string EmbeddingModel = "nomic-embed-text-v2-moe";// qwen3-embedding:8b";
+        public string EmbeddingModel = "qwen3-embedding:8b";// "nomic-embed-text-v2-moe";// qwen3-embedding:8b";
         public int SimvolsMax { get; set; } = 40000;
         public int WordMax { get => SimvolsMax / 6; set => SimvolsMax = value * 6; }
         public bool UseCommonContext { get; set; } = false;// вгружать ли в себя файлы

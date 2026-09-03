@@ -11,15 +11,122 @@ using OllamaChat;
 
 namespace Deepseek
 {
+    public class ChunkInfo
+    {
+        public string Text { get; set; }
+        public string Folder { get; set; }
+        public float[] Embedding { get; set; }
+    }
     class ChankData
     {
         public ChankData() { }
 
         // Хранилище чанков: текст + вектор
-        private List<(string Text,string Folder, float[] Embedding)> _chunks { get; set; } = new();
-        private HashSet<string> _documents { get; set; } = new();
-        
-        public async static Task<ChankData> GetChankData(MainWindow mainWindow, ChatData chatData)
+        //public List<(string Text,string Folder, float[] Embedding)> _chunks { get; set; } = new();
+        public List<ChunkInfo> _chunks { get; set; } = new();
+        public HashSet<string> _documents { get; set; } = new();
+
+        public string EmbeddedModel { get; set; } = "";// модель ИИ
+
+
+        public async Task<List<ChunkInfo>> GetChanks(MainWindow mainWindow, ChatData chatData, bool allClear = false)
+        {
+            if (allClear)
+            {
+                _chunks.Clear();
+                _documents.Clear();
+            }
+
+            string folderData = chatData.promptFolder;
+            var files = TextExtractor.GetSupportedFiles(folderData).ToHashSet();
+
+            // Удаляем чанки, соответствующие удалённым файлам
+            var removedFiles = _documents.Except(files).ToList();
+            if (removedFiles.Count > 0)
+            {
+                _chunks = _chunks.Where(x => !removedFiles.Contains(x.Folder)).ToList();
+                _documents = _documents.Where(x => !removedFiles.Contains(x)).ToHashSet();
+            }
+
+            // Находим новые файлы
+            var newFiles = files.Except(_documents).ToList();
+            if (newFiles.Any())
+            {
+                var extracted = TextExtractor.ExtractAllText(newFiles);
+                foreach (var fileText in extracted)
+                {
+                    if (_documents.Contains(fileText.FileName))
+                        continue;
+
+                    var chunks = TextExtractor.ChunkText(fileText.Text, chatData._chunkSize);
+
+                    EmbeddedModel =chatData.EmbeddingModel;//парамтеры по которым мы создавали нашу модель
+
+                    foreach (var chunk in chunks)
+                    {
+                        var embedding = await mainWindow.GetEmbeddingAsync(chunk, chatData);
+                        string fileName = Path.GetFileName(fileText.FileName);
+                        string chunkWithMeta = $"[{fileName}] {chunk}";
+                        _chunks.Add(new ChunkInfo
+                        {
+                            Text = chunkWithMeta,
+                            Folder = fileText.FileName,
+                            Embedding = embedding
+                        });
+                    }
+                    _documents.Add(fileText.FileName);
+                }
+            }
+
+            if (newFiles.Any() || removedFiles.Count != 0)
+            {
+                SaveChankData(mainWindow, chatData);
+            }
+
+            return _chunks;
+        }
+        public static async Task<ChankData> GetChankData(MainWindow mainWindow, ChatData chatData)
+        {
+            string folderData = chatData.promptFolder;
+            if (!Directory.Exists(folderData))
+            {
+                Console.WriteLine($"Папка не найдена: {folderData}");
+                return null;
+            }
+
+            string folderVectors = chatData.promptFolderVectors;
+            if (!Directory.Exists(folderVectors))
+            {
+                Directory.CreateDirectory(folderVectors);
+                if (!Directory.Exists(folderVectors))
+                    return null;
+            }
+
+            var jsonFile = Directory.GetFiles(folderVectors, "*.json").FirstOrDefault();
+
+            if (jsonFile != null)
+            {
+                var json = File.ReadAllText(jsonFile);
+                var chankData = JsonSerializer.Deserialize<ChankData>(json);
+                if (chankData != null)
+                {
+                    // Проверяем, что список чанков не содержит null-элементов (на случай старого формата)
+                    if (chankData._chunks.Any(c => c == null))
+                    {
+                        // Если есть null, пересоздаём заново
+                        chankData = new ChankData();
+                        await chankData.GetChanks(mainWindow, chatData, allClear: true);
+                    }
+                    return chankData;
+                }
+            }
+
+            // Если файла нет или он повреждён — создаём новую базу
+            var newData = new ChankData();
+            await newData.GetChanks(mainWindow, chatData, allClear: true);
+            return newData;
+        }
+        public async static Task<ChankData> GetChankData2(MainWindow mainWindow, ChatData chatData)
         {
             //возвращение
             string folderData = chatData.promptFolder;
@@ -33,7 +140,8 @@ namespace Deepseek
             if (!Directory.Exists(folderVectors))
             {
                 Directory.CreateDirectory(folderVectors);
-                if (!Directory.Exists(folderVectors)) { return null; }
+                if (!Directory.Exists(folderVectors)) 
+                { return null; }
             }
 
             //пытаемся прочитать
@@ -56,7 +164,6 @@ namespace Deepseek
                     return new ChankData(mainWindow, chatData);
                 }
 
-                
                 return chankData;
             }
 
@@ -78,69 +185,7 @@ namespace Deepseek
         }
 
 
-        public async Task<List<(string Text, string Folder, float[] Embedding)>> GetChanks(MainWindow mainWindow, ChatData chatData, bool allClear=false)
-        {
-            //это внешний метод для доступа
-            //if(_chunks!=null && _chunks.Count!=0)
-            //{
-            //    return await Update(mainWindow, chatData, chunkSize);
-            //}
-            if (allClear)
-            {
-                _chunks = new List<(string Text, string Folder, float[] Embedding)>(); // Очищаем предыдущую базу знаний (если нужно)
-                _documents.Clear();
-            }
-            string folderData = chatData.promptFolder;
-            var files = TextExtractor.GetSupportedFiles(folderData).ToHashSet();
-            //находим разницу - уделенный документ
-            var missingInDocuments = _documents.Except(files).ToList();
-
-            if (missingInDocuments.Count > 0)
-            {
-                // Удаляем чанки удалённых документов за один проход
-                _chunks = _chunks.Where(x => !missingInDocuments.Contains(x.Folder)).ToList();
-                _documents = _documents.Where(x => !missingInDocuments.Contains(x)).ToHashSet();
-            }
-
-            var newFiles = files.Except(_documents).ToList();
-            if (newFiles.Any())
-            {
-                List<FileText> lft = TextExtractor.ExtractAllText(newFiles);
-
-                foreach (var l in lft)
-                {
-                    //идем по документам
-                    var chunks = TextExtractor.ChunkText(l.Text, chatData.topK);
-
-                    if (_documents.Contains(l.FileName))
-                    {
-                        continue;
-                    }
-
-                    foreach (var chunk in chunks)
-                    {
-                        var embedding = await mainWindow.GetEmbeddingAsync(chunk, chatData);
-
-                        // Добавляем информацию об источнике в текст чанка
-                        string fileName = Path.GetFileName(l.FileName);
-                        string chunkWithMeta = $"[{fileName}] {chunk}";
-                        _chunks.Add((chunkWithMeta, l.FileName, embedding));
-
-                    }
-                    _documents.Add(l.FileName);
-                    //allText.AddRange(chunks);
-                }
-                //находим разницу - уделенный документ
-
-            }
-
-            if (newFiles.Any() || missingInDocuments.Count!=0)
-            {
-                SaveChankData(mainWindow, chatData);
-            }
-
-            return _chunks;
-        }
+       
         //public async Task<List<(string Text, string Folder, float[] Embedding)>> Update(MainWindow mainWindow, ChatData chatData, int chunkSize)
         //{
         //    string folderData = chatData.promptFolder;

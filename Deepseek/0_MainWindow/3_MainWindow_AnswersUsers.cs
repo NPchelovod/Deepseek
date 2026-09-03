@@ -52,6 +52,8 @@ namespace OllamaChat
                 {
                     return; // обрабатываем только свои ответы!
                 }
+                chatData = incomingChatData;//приравниваем их чтобы развитие было
+
                 // Шаг 4: Извлекаем последнее сообщение от ИИ
                 // История содержит записи вида "User: ..." и "AI: ..."
                 string aiMessage = incomingChatData.ConversationHistory
@@ -93,6 +95,7 @@ namespace OllamaChat
 
                 //сохраняем в историю для повторного запуска
                 SaveFile();
+
                 DeleteAllMessage(chatData.outboxPath);
                 File.Delete(filePath);
             }

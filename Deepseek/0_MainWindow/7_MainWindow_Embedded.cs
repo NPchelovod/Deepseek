@@ -21,16 +21,17 @@ namespace OllamaChat
         //Метод для получения эмбеддингов
         public async Task<float[]> GetEmbeddingAsync(string text, ChatData outChatData)
         {
+            
             var requestData = new
             {
                 model = outChatData.EmbeddingModel,
-                input = text
+                input = text,
                 //prompt = text
             };
             var json = JsonSerializer.Serialize(requestData);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync(OllamaApiUrlEmbed, content);
+            var response = await _httpClient.PostAsync(outChatData.OllamaApiUrlEmbed, content);
             response.EnsureSuccessStatusCode();
 
             var responseString = await response.Content.ReadAsStringAsync();
@@ -86,7 +87,7 @@ namespace OllamaChat
             int topK = outChatData.topK;
             ChankData cd = await ChankData.GetChankData(mainWindow, chatData);
 
-            List < (string Text, string Folder, float[] Embedding)> chunks = await cd.GetChanks(mainWindow, chatData);
+            List <ChunkInfo> chunks = await cd.GetChanks(mainWindow, chatData);
 
 
             if (chunks.Count == 0)
@@ -99,10 +100,10 @@ namespace OllamaChat
 
             
 
-            foreach (var (text,folder, embedding) in chunks)
+            foreach (ChunkInfo chunkInfo in chunks)
             {
-                float score = CosineSimilarity(queryEmbedding, embedding);
-                similarities.Add((score, text));
+                float score = CosineSimilarity(queryEmbedding, chunkInfo.Embedding);
+                similarities.Add((score, chunkInfo.Text));
             }
 
             return similarities

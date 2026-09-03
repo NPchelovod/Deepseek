@@ -91,6 +91,11 @@ namespace OllamaChat
             }
         }
 
+        private string GetQuestions(ChatData outChatData, int lastAnswers=1)//последний ответ пользователя
+        {
+            return null;
+        }
+
         private async Task<string> BuildPromptWithHistory(ChatData outChatData)
         {
             var promptBuilder = new StringBuilder();
