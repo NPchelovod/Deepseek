@@ -76,7 +76,7 @@ namespace OllamaChat
             for (int i = 0; i < chunks.Count; i += batchSize)
             {
                 var batch = chunks.Skip(i).Take(batchSize).ToList();
-                var embeddings = await mainWindow.GetEmbeddingsBatchAsync(batch, chatData);
+                var embeddings = await mainWindow.GetEmbeddingsBatchAsyncParallel(batch, outChatData, 1);
                 for (int j = 0; j < batch.Count; j++)
                 {
                     string chunk = batch[j];
@@ -125,7 +125,37 @@ namespace OllamaChat
             throw new Exception("Embeddings not found in response");
         }
 
+        public async Task<List<float[]>> GetEmbeddingsBatchAsyncParallel(List<string> texts, ChatData outChatData, int maxConcurrency = 1)
+        {
+            var results = new List<float[]>(texts.Count);
 
+            // Если параллелизм не нужен – простой последовательный цикл
+            if (maxConcurrency <= 1)
+            {
+                foreach (var text in texts)
+                {
+                    results.Add(await GetEmbeddingAsync(text, outChatData));
+                }
+                return results;
+            }
+
+            // Параллельное выполнение с ограничением количества одновременных запросов
+            using var semaphore = new SemaphoreSlim(maxConcurrency);
+            var tasks = texts.Select(async text =>
+            {
+                await semaphore.WaitAsync();
+                try
+                {
+                    return await GetEmbeddingAsync(text, outChatData);
+                }
+                finally
+                {
+                    semaphore.Release();
+                }
+            });
+
+            return (await Task.WhenAll(tasks)).ToList();
+        }
 
         private List<string> SplitIntoChunks(string text, int chunkSize)
         {
@@ -141,12 +171,12 @@ namespace OllamaChat
         private async Task<List<string>> SearchRelevantChunksAsync(string query, ChatData outChatData)
         {
             int topK = outChatData.topK;
-            ChankData cd = await ChankData.GetChankData(mainWindow, chatData);
+            ChankData cd = await ChankData.GetChankData(mainWindow, outChatData);
             if(cd==null)
             {
                 throw new ArgumentException("ChankData cd  не найдена");
             }
-            List <ChunkInfo> chunks = await cd.GetChanks(mainWindow, chatData);
+            List <ChunkInfo> chunks = await cd.GetChanks(mainWindow, outChatData);
 
 
             if (chunks.Count == 0)

@@ -1,5 +1,6 @@
 ﻿using Deepseek;
 using Deepseek;
+using DocumentFormat.OpenXml.InkML;
 using DocumentFormat.OpenXml.Office.SpreadSheetML.Y2023.MsForms;
 using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Microsoft.Win32; // Для OpenFileDialog
@@ -172,8 +173,8 @@ namespace OllamaChat
             outChatData.AnswerPromptVector = null;// на всякий случай
 
             if (outChatData.ConversationHistory.Count == 0)
-            { 
-                return promptBuilder.ToString();
+            {
+                return "";
             }
 
             string question =await GetQuestions(outChatData);
@@ -227,35 +228,38 @@ namespace OllamaChat
                 }
 
             }
-
-
+            promptBuilder.AppendLine("Мой вопрос:");
+            promptBuilder.AppendLine(question);
             
 
-            //// 2. Контекст из файлов (если есть)
-            //if (!string.IsNullOrWhiteSpace(outChatData.ContextFromFiles) && outChatData.UseCommonContext)
-            //{
-            //    // Берём первые N символов, чтобы не превысить лимит модели.
-            //    // Вы можете настроить N в зависимости от модели и её контекстного окна.
-            //    int maxContextLength = outChatData.SimvolsVoprosMax;
-            //    string context = outChatData.ContextFromFiles.Length > maxContextLength
-            //        ? outChatData.ContextFromFiles.Substring(0, maxContextLength)
-            //        : outChatData.ContextFromFiles;
 
-            //    promptBuilder.AppendLine("=== КОНТЕКСТ ИЗ ФАЙЛОВ ===");
-            //    promptBuilder.AppendLine(context);
-            //    promptBuilder.AppendLine("=== КОНЕЦ КОНТЕКСТА ===");
-            //    promptBuilder.AppendLine();
-            //}
 
-            // 3. История диалога (последние 10 сообщений)
-            //int startIndex = Math.Max(0, outChatData.ConversationHistory.Count - 10);
-            //for (int i = startIndex; i < outChatData.ConversationHistory.Count; i++)
-            //{
-            //    promptBuilder.AppendLine(outChatData.ConversationHistory[i]);
-            //}
 
-            // 4. Маркер для ответа ИИ
-            promptBuilder.Append("AI: ");
+                //// 2. Контекст из файлов (если есть)
+                //if (!string.IsNullOrWhiteSpace(outChatData.ContextFromFiles) && outChatData.UseCommonContext)
+                //{
+                //    // Берём первые N символов, чтобы не превысить лимит модели.
+                //    // Вы можете настроить N в зависимости от модели и её контекстного окна.
+                //    int maxContextLength = outChatData.SimvolsVoprosMax;
+                //    string context = outChatData.ContextFromFiles.Length > maxContextLength
+                //        ? outChatData.ContextFromFiles.Substring(0, maxContextLength)
+                //        : outChatData.ContextFromFiles;
+
+                //    promptBuilder.AppendLine("=== КОНТЕКСТ ИЗ ФАЙЛОВ ===");
+                //    promptBuilder.AppendLine(context);
+                //    promptBuilder.AppendLine("=== КОНЕЦ КОНТЕКСТА ===");
+                //    promptBuilder.AppendLine();
+                //}
+
+                // 3. История диалога (последние 10 сообщений)
+                //int startIndex = Math.Max(0, outChatData.ConversationHistory.Count - 10);
+                //for (int i = startIndex; i < outChatData.ConversationHistory.Count; i++)
+                //{
+                //    promptBuilder.AppendLine(outChatData.ConversationHistory[i]);
+                //}
+
+                // 4. Маркер для ответа ИИ
+                promptBuilder.Append("AI: ");
 
             return promptBuilder.ToString();
         }

@@ -19,6 +19,7 @@ namespace Deepseek
     }
     class ChankData
     {
+        public static Dictionary<string, ChankData> AllChanks = new Dictionary<string, ChankData>();
         public ChankData() { }
 
         // Хранилище чанков: текст + вектор
@@ -66,98 +67,110 @@ namespace Deepseek
 
                     EmbeddedModel =chatData.EmbeddingModel;//парамтеры по которым мы создавали нашу модель
                     string fileName = Path.GetFileName(fileText.FileName);
-                    var addChanks=await mainWindow.GetAllEmbeddingsBatchAsync(chunks, chatData, fileName);
-                    _chunks.AddRange(addChanks);
-                    //foreach (var chunk in chunks)
-                    //{
-                    //    var embedding = await mainWindow.GetEmbeddingAsync(chunk, chatData);
-                        
-                    //    string chunkWithMeta = $"[{fileName}] {chunk}";
-                    //    _chunks.Add(new ChunkInfo
-                    //    {
-                    //        Text = chunkWithMeta,
-                    //        Folder = fileText.FileName,
-                    //        Embedding = embedding
-                    //    });
-                    //}
+                    //var addChanks=await mainWindow.GetAllEmbeddingsBatchAsync(chunks, chatData, fileName);
+                    //_chunks.AddRange(addChanks);
+
+                    foreach (var chunk in chunks)
+                    {
+                        var embedding = await mainWindow.GetEmbeddingAsync(chunk, chatData);
+
+                        string chunkWithMeta = $"[{fileName}] {chunk}";
+                        _chunks.Add(new ChunkInfo
+                        {
+                            Text = chunkWithMeta,
+                            Folder = fileText.FileName,
+                            Embedding = embedding
+                        });
+                    }
                     _documents.Add(fileText.FileName);
                 }
             }
 
             if (newFiles.Any() || removedFiles.Count != 0)
             {
-                SaveChankData(mainWindow, chatData);
+                await SaveChankData(this, mainWindow, chatData);
             }
+
+            string nameVectors = chatData.nameVectors;
+            AllChanks[nameVectors] = this;//сохраняем себя на всякий случай
 
             return _chunks;
         }
         public static async Task<ChankData> GetChankData(MainWindow mainWindow, ChatData chatData)
         {
-            string folderData = chatData.promptFolder;
-            if (!Directory.Exists(folderData))
+            string nameVectors = chatData.nameVectors;
+            string jsonFile = "";
+            if (AllChanks.TryGetValue(nameVectors, out var chankData) && chankData != null)
             {
-                Console.WriteLine($"Папка не найдена: {folderData}");
-                return null;
-            }
 
-            string folderVectors = chatData.promptFolderVectors;
-            if (!Directory.Exists(folderVectors))
-            {
-                Directory.CreateDirectory(folderVectors);
-                if (!Directory.Exists(folderVectors))
-                    return null;
             }
-            var jsonFiles = Directory.GetFiles(folderVectors, "*.json").ToList();
-            var jsonFile = jsonFiles.FirstOrDefault();
-            var jsonFile2 = jsonFiles.Where(x=>x.Contains(chatData.EmbeddingModel)).FirstOrDefault();
-            if (!string.IsNullOrEmpty(jsonFile2))
+            else
             {
-                jsonFile = jsonFile2;
-            }
-            if (!string.IsNullOrEmpty(jsonFile))
-            {
-                var json = File.ReadAllText(jsonFile);
-                var chankData = JsonSerializer.Deserialize<ChankData>(json);
-                if (chankData != null)
+                string folderData = chatData.promptFolder;
+                if (!Directory.Exists(folderData))
                 {
-                    // Проверяем, что список чанков не содержит null-элементов (на случай старого формата)
-                    if (chankData._chunks.Any(c => c == null))
-                    {
-                        // Если есть null, пересоздаём заново
-                        chankData = new ChankData();
-                        await chankData.GetChanks(mainWindow, chatData, allClear: true);
-                    }
-                    else if(chankData.EmbeddedModel!= chatData.EmbeddingModel)
-                    {
-                        //не наша ИИ модель вектора
-                        chankData = new ChankData();
-                    }
+                    Console.WriteLine($"Папка не найдена: {folderData}");
+                    return null;
+                }
 
-                    return chankData;
+                string folderVectors = chatData.promptFolderVectors;
+                if (!Directory.Exists(folderVectors))
+                {
+                    Directory.CreateDirectory(folderVectors);
+                    if (!Directory.Exists(folderVectors))
+                    {
+                        return null;
+                    }
+                }
+                var jsonFiles = Directory.GetFiles(folderVectors, "*.json").ToList();
+                jsonFile = jsonFiles.FirstOrDefault();
+                var jsonFile2 = jsonFiles.Where(x => x.Contains(chatData.EmbeddingModel)).FirstOrDefault();
+                if (!string.IsNullOrEmpty(jsonFile2))
+                {
+                    jsonFile = jsonFile2;
+                }
+                if (!string.IsNullOrEmpty(jsonFile))
+                {
+                    try
+                    {
+                        var json = File.ReadAllText(jsonFile);
+
+                        chankData = JsonSerializer.Deserialize<ChankData>(json);
+                    }
+                    catch { }
                 }
             }
+            if (chankData != null)
+            {
+                // Проверяем, что список чанков не содержит null-элементов (на случай старого формата)
+                if (chankData._chunks.Any(c => c == null))
+                {
+                    // Если есть null, пересоздаём заново
+                    chankData = new ChankData();
+                    //await chankData.GetChanks(mainWindow, chatData, allClear: true);
+                }
+                else if(chankData.EmbeddedModel!= chatData.EmbeddingModel)
+                {
+                    //не наша ИИ модель вектора
+                    chankData = new ChankData();
+                }
+                else if(!string.IsNullOrEmpty(jsonFile) && !jsonFile.Contains(chatData.nameVectors)) 
+                {
+                   await SaveChankData(chankData, mainWindow, chatData);
+                }
+
+                return chankData;
+            }
+            
 
             // Если файла нет или он повреждён — создаём новую базу
             var newData = new ChankData();
-            await newData.GetChanks(mainWindow, chatData, allClear: true);
+            //await newData.GetChanks(mainWindow, chatData, allClear: true);
             return newData;
         }
         
 
-        public ChankData(MainWindow mainWindow, ChatData chatData)
-        {
-            //начинаем создание
-            string folderData = chatData.promptFolder;
-            if (!Directory.Exists(folderData))
-            {
-                Console.WriteLine($"Папка не найдена: {folderData}");
-                return;
-            }
-
-            //var chanks = GetChanks(mainWindow, chatData);
-
-            
-        }
+       
 
 
        
@@ -172,16 +185,20 @@ namespace Deepseek
         //}
 
         
-        public void SaveChankData(MainWindow mainWindow, ChatData chatData)
+        public static async Task SaveChankData(ChankData chankData, MainWindow mainWindow, ChatData chatData)
         {
+            string nameVectors = chatData.nameVectors;
+
+            AllChanks[nameVectors] = chankData;//сохраняем себя
+
             string folderVectors = chatData.promptFolderVectors;
             if (!Directory.Exists(folderVectors))
             {
                 Directory.CreateDirectory(folderVectors);
                 if (!Directory.Exists(folderVectors)) { return; }
             }
-            string json = JsonSerializer.Serialize(this, new JsonSerializerOptions { IncludeFields = true, WriteIndented = true });
-            File.WriteAllTextAsync(chatData.nameVectors, json);
+            string json = JsonSerializer.Serialize(chankData, new JsonSerializerOptions { IncludeFields = true, WriteIndented = true });
+            await File.WriteAllTextAsync(chatData.nameVectors, json);
         }
 
     }

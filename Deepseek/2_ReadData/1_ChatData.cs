@@ -97,7 +97,10 @@ namespace Deepseek
         public string promptFolder { get; set; } = @"Y:\ИИ\_БазаДанных"; // можно указать начальную папку
 
         public string promptFolderVectors  => Path.Combine(promptFolder, "_Вектора"); // получение папки ветора
-        public string nameVectors => Path.Combine(promptFolderVectors, $"{EmbeddingModel}_D{_chunkWordSize}x{topK}_Vectors.json");//уникальная версия для настроек
+                                                                                      // Безопасное имя модели для использования в именах файлов
+        private string SafeEmbeddingModel => EmbeddingModel.Replace(':', '_');
+        public string nameVectors => Path.Combine(
+    promptFolderVectors,$"{SafeEmbeddingModel}_W{_chunkWordSize}S{topK}_Vector.json");//уникальная версия для настроек
         public DateTime Timestamp { get; set; }
 
         public string inboxPath { get; set; } = @"Y:\ИИ\_Разработчику\_Вопросы";
@@ -134,7 +137,7 @@ namespace Deepseek
 
 
         public int _chunkWordSize { get; set; } = 900;//слов в одном текстве Средние чанки: 512–1024 токена (~400–800 слов).
-        public int topK { get; set; } = 5;//выборка сообщений
+        public int topK { get; set; } = 4;//выборка сообщений
 
         public int LastMessageInQuestion { get; set; } = 1;//сколько последних сообщений в контекст вводить
         public void Clear()
