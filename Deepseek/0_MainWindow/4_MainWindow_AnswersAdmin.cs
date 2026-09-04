@@ -194,31 +194,31 @@ namespace OllamaChat
                 var relevantChunks = await SearchRelevantChunksAsync(question, outChatData);
                 var context = string.Join("\n\n", relevantChunks.Select((c, i) => $"Документ {i + 1}:\n{c}"));
 
+
+
                 // 2. Контекст из файлов (если есть)
                 if (string.IsNullOrEmpty(context))
                 {
 
                     context = GetContextFileData(outChatData);
-                    
-
-                   // Вы можете настроить N в зависимости от модели и её контекстного окна.
-                        int maxContextLength = outChatData.SimvolsVoprosMax;
-                    context = context.Length > maxContextLength
-                        ? context.Substring(0, maxContextLength)
-                        : context;
                 }
-                else
+
+                // Вы можете настроить N в зависимости от модели и её контекстного окна.
+                    int maxContextLength = outChatData.SimvolsVoprosMax;
+                context = context.Length > maxContextLength
+                    ? context.Substring(0, maxContextLength)
+                    : context;
+                
+                outChatData.AnswerPromptVector = new ChatElement()
                 {
-                    outChatData.AnswerPromptVector = new ChatElement()
-                    {
 
-                        Id = outChatData.Id,
-                        StartTime = DateTime.Now,
-                        Senders = ESenders.AI_Prompt,
-                        Text = context,
-                        PromptQuestion = question,
-                    };
-                }
+                    Id = outChatData.Id,
+                    StartTime = DateTime.Now,
+                    Senders = ESenders.AI_Prompt,
+                    Text = context,
+                    PromptQuestion = question,
+                };
+                
                 if (!string.IsNullOrEmpty(context))
                 {
                     promptBuilder.AppendLine("=== КОНТЕКСТ ИЗ ФАЙЛОВ ===");
