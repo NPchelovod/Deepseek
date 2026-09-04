@@ -24,16 +24,17 @@ namespace OllamaChat
 
         public MainWindow()
         {
+            mainWindow = this;
             InitializeComponent();
             _httpClient = new HttpClient();
             
-            mainWindow=this;
-            Initalize();
+            
+            this.Loaded += SettingsWindow_Loaded;
 
         }
         public ChatData chatData=new ChatData();
 
-        public void Initalize()
+        private void SettingsWindow_Loaded(object sender, RoutedEventArgs e)
         {
             InitializeAnswerUsers();
             InitializeAnswerAdmin();

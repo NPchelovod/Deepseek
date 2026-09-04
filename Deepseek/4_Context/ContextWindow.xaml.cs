@@ -20,13 +20,19 @@ namespace Deepseek
     /// </summary>
     public partial class ContextWindow : Window
     {
+        MainWindow _mainWindow;
         public ContextWindow(MainWindow mainWindow)
         {
+            _mainWindow = mainWindow;
             InitializeComponent();
-            if (mainWindow.chatData.AnswerPromptVector != null)
+            this.Loaded += SettingsWindow_Loaded;
+        }
+        private void SettingsWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (_mainWindow.chatData.AnswerPromptVector != null)
             {
-                string answer = mainWindow.chatData.AnswerPromptVector.GetAnswerText();
-                answer += "\n" + mainWindow.chatData.AnswerPromptVector.GetTime;
+                string answer = _mainWindow.chatData.AnswerPromptVector.GetAnswerText();
+                answer += "\n" + _mainWindow.chatData.AnswerPromptVector.GetTime;
                 ContextTextBox.Text = answer;
             }
         }

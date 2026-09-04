@@ -25,11 +25,13 @@ namespace Deepseek
         {
             _mainWindow = mainWindow;
             InitializeComponent();
-            InitializePuth();
+
+            this.Loaded += SettingsWindow_Loaded;
+            //InitializePuth();
 
 
         }
-        private void InitializePuth()
+        private void SettingsWindow_Loaded(object sender, RoutedEventArgs e)
         {
             InboxPathTextBox.Text = _mainWindow.chatData.inboxPath;
             OutboxPathTextBox.Text = _mainWindow.chatData.outboxPath;
