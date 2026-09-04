@@ -89,11 +89,32 @@ namespace OllamaChat
         {
             chatData.UseCommonContext = UseContextCheckBox.IsChecked == true;
             
+            if(UseContextCheckBox.IsChecked==false)
+            {
+                QuoteFromKnowledgeBaseCheckBox.IsChecked = false;
+            }
             // готовим контекст
             //GetContextFileData(chatData);
            
 
         }
+
+
+        private void UseHistoryVopros_Changed(object sender, RoutedEventArgs e)
+        {
+            if (UseHistoryVopros.IsChecked == false)
+            {
+                UseOnlyRelevantHistoryInVopros.IsChecked = false;
+            }
+        }
+        private void UseOnlyRelevantHistoryInVopros_Changed(object sender, RoutedEventArgs e)
+        {
+            if(UseOnlyRelevantHistoryInVopros.IsChecked == true)
+            {
+                UseHistoryVopros.IsChecked = true;
+            }
+        }
+
         private void IsAdminCheckBox_Changed(object sender, RoutedEventArgs e)
         {
             chatData.IsAdminCheckBox = IsAdminCheckBox.IsChecked == true;
@@ -125,12 +146,17 @@ namespace OllamaChat
 
         }
 
+
+        private void RollbackDeepseekButton_Click(object sender, RoutedEventArgs e)
+        {
+            //открыть окно в браузере дипсика
+        }
         private void QuoteFromKnowledgeBaseCheckBox_Changed(object sender, RoutedEventArgs e)
         {
             // Здесь логика: например, сохранить состояние или обновить контекст
-            bool useQuotes = QuoteFromKnowledgeBaseCheckBox.IsChecked ?? false;
+            bool useQuotes = QuoteFromKnowledgeBaseCheckBox.IsChecked ==true;
             chatData.OnlyUseCommonContext = useQuotes;
-            if(chatData.OnlyUseCommonContext)
+            if(useQuotes)
             {
                 UseContextCheckBox.IsChecked = true;
             }

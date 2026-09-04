@@ -77,11 +77,21 @@ namespace Deepseek
         public string ModelII { get; set; } = "qwen2.5:7b-instruct-q4_K_M";//"gemma2:9b",//"qwen2.5:32b-instruct-q4_K_M",//"deepseek-r1:8b",
 
         public string EmbeddingModel = "qwen3-embedding:8b";// "nomic-embed-text-v2-moe";// qwen3-embedding:8b";
-        public int SimvolsVoprosMax { get; set; } = 4000;
-        public int WordVoprosMax { get => SimvolsVoprosMax / 6; set => SimvolsVoprosMax = value * 6; }
+        public int SimvolsVoprosMax { get; set; } = 2000;
+        public double WordVoprosMax { get => SimvolsVoprosMax / 6.0; set => SimvolsVoprosMax =(int)( value * 6.0); }
+
+        public int SimvolsContextMax { get; set; } = 2000;
+        public double WordContextMax { get => SimvolsContextMax / 6.0; set => SimvolsContextMax = (int)(value * 6.0); }
+
+
         public bool UseCommonContext { get; set; } = false;// вгружать ли в себя файлы
 
         public bool OnlyUseCommonContext { get; set; } = false;//не использовать ИИ-чат
+
+        public bool
+
+
+
 
         public bool IsAdminCheckBox { get; set; } = false;
 

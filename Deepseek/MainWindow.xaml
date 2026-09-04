@@ -1,10 +1,11 @@
 ﻿<Window x:Class="OllamaChat.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Ollama Chat" Height="520" Width="800">
+        Title="ENSChat" Height="520" Width="900">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -20,35 +21,69 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <!-- Строка с кнопками и чекбоксами -->
             <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,5">
                 <!-- Галочка: использовать базу знаний -->
-                <CheckBox x:Name="UseContextCheckBox" Content="Использовать Базу Знаний" 
+                <CheckBox x:Name="UseContextCheckBox" Content="B Использовать Базу Знаний БЗ" 
                           VerticalAlignment="Center" 
                           Checked="UseContextCheckBox_Changed" Unchecked="UseContextCheckBox_Changed"
-                          Margin="0,0,10,0"/>
+                          Margin="0,0,10,0"
+                           ToolTip="Ответ на основании документов из базы знаний, на основе векторной оценки релевантности вопроса, выборкой цитат длиной min(WC;W*X) по косинусовому сходству с вопросом"/>
+                          
 
                 <!-- Галочка: ответ цитатами из базы -->
-                <CheckBox x:Name="QuoteFromKnowledgeBaseCheckBox" Content="Ответ цитатами из базы" 
+                <CheckBox x:Name="QuoteFromKnowledgeBaseCheckBox" Content="B1 Ответ только цитатами из БЗ" 
                          VerticalAlignment="Center"
                          Checked="QuoteFromKnowledgeBaseCheckBox_Changed" 
                          Unchecked="QuoteFromKnowledgeBaseCheckBox_Changed"
                          Margin="0,0,10,0"
-                         ToolTip="При ответе модель будет приводить цитаты из найденного контекста"/>
+                         ToolTip="При ответе модель будет приводить цитаты из найденного контекста, не запуская ИИ-чат, только Векторная Embeding модель, !сокращение времени!, ответ размеров W*X"/>
 
-                <Button Content="Загрузить папку" 
+                <Button Content="Загрузить папку БЗ" 
                         Click="LoadFolderButton_Click" Margin="0,0,5,0" Padding="5"/>
-                <Button Content="Просмотр контекста" 
+                <Button Content="Просмотр ответа цитатами из БЗ" 
                         Click="ViewContextButton_Click" Margin="0,0,5,0" Padding="5"
                         ToolTip="Показать текущий контекст, который будет отправлен модели"/>
                 <Button Content="Очистить историю" 
                         Click="ClearHistoryButton_Click" Margin="0,0,5,0" Padding="5"/>
             </StackPanel>
 
+            <!-- Строка с кнопками и чекбоксами -->
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,5">
+                <CheckBox x:Name="UseHistoryVopros" 
+              Content="H Использовать историю вопросов" 
+              VerticalAlignment="Center" 
+              Checked="UseHistoryVopros_Changed" 
+              Unchecked="UseHistoryVopros_Changed"
+              Margin="0,0,10,0"
+                           ToolTip="Будет анализироваться история вопросов и ответов прошлых, длиной WQ из настроек разработчика"
+                          
+                          />
+            
+                <CheckBox x:Name="UseOnlyRelevantHistoryInVopros" 
+              Content="H1 Только релевантную историю вопросов" 
+              VerticalAlignment="Center" 
+              Checked="UseOnlyRelevantHistoryInVopros_Changed" 
+              Unchecked="UseOnlyRelevantHistoryInVopros_Changed"
+              Margin="0,0,10,0"
+              ToolTip="Будет использоваться только та история длиной WQ, которая согласно векторному ИИ семантически связана с текущим вопросом. Старая/не связанная история игнорируется."/>
+
+                <CheckBox x:Name="UseOnlyYourQuestion" 
+Content="H2 Только вопросы, а не ответы ИИ" 
+VerticalAlignment="Center" 
+Checked="UseOnlyRelevantHistoryInVopros_Changed" 
+Unchecked="UseOnlyRelevantHistoryInVopros_Changed"
+Margin="0,0,10,0"
+ToolTip="Будут использоваться ваши вопросы без ответов"/>
+
+            </StackPanel>
+
+
             <!-- Строка с полем ввода и кнопкой отправки -->
-            <DockPanel Grid.Row="1">
+            <DockPanel Grid.Row="2">
                 <Button Content="Отправить" DockPanel.Dock="Right" 
                         Click="SendButton_Click" Margin="5,0,0,0" Padding="10,5"/>
                 <TextBox x:Name="InputBox" 
@@ -63,7 +98,7 @@
         </Grid>
 
         <!-- Панель настроек -->
-        <Border Grid.Row="2" Background="#F5F5F5" Padding="10" Margin="5" CornerRadius="4">
+        <Border Grid.Row="3" Background="#F5F5F5" Padding="10" Margin="5" CornerRadius="4">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -119,17 +154,6 @@
                             </ComboBoxItem.ToolTip>
                         </ComboBoxItem>
 
-                        <ComboBoxItem Content="qwen3-embedding:8b">
-                            <ComboBoxItem.ToolTip>
-                                <TextBlock>
-                                    <Bold>Компактная эмбеддинг‑модель</Bold><LineBreak/>
-                                    Быстро строит векторные представления, малый расход памяти.<LineBreak/>
-                                    Подходит для семантического поиска, кластеризации и простых классификаций.<LineBreak/>
-                                    <LineBreak/>
-                                    <Italic>Не предназначена для генерации ответов — только для получения эмбеддингов.</Italic>
-                                </TextBlock>
-                            </ComboBoxItem.ToolTip>
-                        </ComboBoxItem>
                     </ComboBox>
                 </StackPanel>
 
@@ -141,12 +165,18 @@
                             HorizontalAlignment="Right" VerticalAlignment="Center">
                     <CheckBox x:Name="IsAdminCheckBox" Content="Я имею свою ИИ" 
                               VerticalAlignment="Center"
-                              Checked="IsAdminCheckBox_Changed" Unchecked="IsAdminCheckBox_Changed"/>
+                              Checked="IsAdminCheckBox_Changed" Unchecked="IsAdminCheckBox_Changed"
+                               ToolTip="Будет ожидаться что ваше ПК может запустить ИИ и отвечать на вопросы"
+                              />
                 </StackPanel>
 
                 <!-- 4. Кнопки "Откат настроек" и "Настройки Разраб." -->
                 <StackPanel Orientation="Horizontal" Grid.Column="3" 
                             HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10,0,0,0">
+                    <Button Content="Deepseek лучше" 
+                        Click="RollbackDeepseekButton_Click" 
+                        Margin="0,0,5,0" Padding="5,2"
+                        ToolTip="Я за Deepseek"/>
                     <Button Content="Откат настроек" 
                             Click="RollbackSettingsButton_Click" 
                             Margin="0,0,5,0" Padding="5,2"

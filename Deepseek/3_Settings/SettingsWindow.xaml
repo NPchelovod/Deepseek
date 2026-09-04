@@ -17,6 +17,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
 		</Grid.RowDefinitions>
 		<Grid.ColumnDefinitions>
@@ -82,8 +83,8 @@
          ToolTip="Адрес API Ollama"/>
 
         <!-- Новое поле: количество слов в разбивке -->
-        <TextBlock Grid.Row="9" Grid.Column="0" Text="Количество слов в разбивке по смыслу:" VerticalAlignment="Center" Margin="0,0,10,5"
-                   ToolTip="Максимальное число слов в одном фрагменте при разбиении текста"/>
+        <TextBlock Grid.Row="9" Grid.Column="0" Text="Чанк W Количество слов в разбивке по смыслу:" VerticalAlignment="Center" Margin="0,0,10,5"
+                   ToolTip="Максимальное число слов в одном фрагменте при разбиении текста, для генерации Вектора документа если он не был создан ещё"/>
         <TextBox Grid.Row="9" Grid.Column="1" x:Name="WordsSplitCountTextBox"
                  Margin="0,0,5,5"
                  VerticalAlignment="Center"
@@ -91,26 +92,34 @@
                  HorizontalAlignment="Left" Width="80"/>
 
         <!-- Новое поле: количество слов в разбивке -->
-        <TextBlock Grid.Row="10" Grid.Column="0" Text="Количество релевантных разбивок:" VerticalAlignment="Center" Margin="0,0,10,5"
-           ToolTip="столько разбивок в ИИ-чат поступают для получения ответа"/>
+        <TextBlock Grid.Row="10" Grid.Column="0" Text="Чанк X Количество релевантных разбивок:" VerticalAlignment="Center" Margin="0,0,10,5"
+           ToolTip="столько разбивок X в ИИ-чат поступают размеров в W слов для получения ответа, "/>
         <TextBox Grid.Row="10" Grid.Column="1" x:Name="WordsCountTextBox"
          Margin="0,0,5,5"
          VerticalAlignment="Center"
          Text="4"
          HorizontalAlignment="Left" Width="80"/>
 
+        <!-- Новое поле: количество слов в разбивке -->
+        <TextBlock Grid.Row="11" Grid.Column="0" Text="WC Макс количество слов контекста из чанков:" VerticalAlignment="Center" Margin="0,0,10,5"
+  ToolTip="считай будет подан в контекст из документа W*X слов но они урежутся под WC слов"/>
+        <TextBox Grid.Row="11" Grid.Column="1" x:Name="WordsCountMaxChankContextTextBox"
+Margin="0,0,5,5"
+VerticalAlignment="Center"
+Text="2500"
+HorizontalAlignment="Left" Width="80"/>
 
-            <!-- Новое поле: количество слов в разбивке -->
-            <TextBlock Grid.Row="11" Grid.Column="0" Text="Макс количество слов в истории запросов:" VerticalAlignment="Center" Margin="0,0,10,5"
-       ToolTip="считай суммарный запрос это количество слов+кол-во разбивок*слов в разбивке"/>
-            <TextBox Grid.Row="11" Grid.Column="1" x:Name="WordsCountMaxTextBox"
+        <!-- Новое поле: количество слов в разбивке -->
+            <TextBlock Grid.Row="12" Grid.Column="0" Text="WQ Макс количество слов в истории диалога с ИИ:" VerticalAlignment="Center" Margin="0,0,10,5"
+       ToolTip="считай предыдущий диалог урежется под WQ слов, надо чтобы WQ+WC не превышали кол-во токенов"/>
+            <TextBox Grid.Row="12" Grid.Column="1" x:Name="WordsCountMaxTextBox"
      Margin="0,0,5,5"
      VerticalAlignment="Center"
-     Text="2500"
+     Text="1500"
      HorizontalAlignment="Left" Width="80"/>
         
         <!-- Кнопки сохранения/отмены -->
-		<StackPanel Grid.Row="12" Grid.ColumnSpan="3" Orientation="Horizontal"
+		<StackPanel Grid.Row="13" Grid.ColumnSpan="3" Orientation="Horizontal"
                     HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,10,0,0">
 			<Button Content="Сохранить" Width="80" Margin="0,0,10,0" Click="SaveButton_Click"/>
 			<Button Content="Отмена" Width="80" Click="CancelButton_Click"/>
