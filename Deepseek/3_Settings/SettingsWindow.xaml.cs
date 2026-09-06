@@ -31,8 +31,11 @@ namespace Deepseek
 
 
         }
+
+        private bool Initializ=false;
         private void SettingsWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            Initializ = true;
             InboxPathTextBox.Text = _mainWindow.chatData.inboxPath;
             OutboxPathTextBox.Text = _mainWindow.chatData.outboxPath;
             ArchivePathTextBox.Text = _mainWindow.chatData.archivePath;
@@ -50,7 +53,7 @@ namespace Deepseek
             WordsCountMaxChankContextTextBox.Text = ((int)_mainWindow.chatData.WordContextMax).ToString();
             WordsCountMaxTextBox.Text = ((int)_mainWindow.chatData.WordVoprosMax).ToString();
 
-            
+            CalcToken(false);
 
         }
         // Обработчик кнопки "Обзор..." для поля "Папка входящих"
@@ -92,13 +95,15 @@ namespace Deepseek
         }
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!string.IsNullOrEmpty(InboxPathTextBox.Text) && System.IO.Directory.Exists(InboxPathTextBox.Text))
+            if (!string.IsNullOrEmpty(InboxPathTextBox.Text)&& _mainWindow.chatData.inboxPath != InboxPathTextBox.Text && System.IO.Directory.Exists(InboxPathTextBox.Text))
             {
                 _mainWindow.chatData.inboxPath = InboxPathTextBox.Text;
+                _mainWindow.InitializeAnswerAdmin();
             }
-            if (!string.IsNullOrEmpty(OutboxPathTextBox.Text) && System.IO.Directory.Exists(OutboxPathTextBox.Text))
+            if (!string.IsNullOrEmpty(OutboxPathTextBox.Text)&& _mainWindow.chatData.outboxPath != OutboxPathTextBox.Text && System.IO.Directory.Exists(OutboxPathTextBox.Text))
             {
                 _mainWindow.chatData.outboxPath = OutboxPathTextBox.Text;
+                _mainWindow.InitializeAnswerUsers();
             }
             if (!string.IsNullOrEmpty(ArchivePathTextBox.Text) && System.IO.Directory.Exists(ArchivePathTextBox.Text))
             {
@@ -143,7 +148,9 @@ namespace Deepseek
             {
                 _mainWindow.chatData.WordVoprosMax = val3;
             }
-            
+
+            CalcToken(false);
+
             Close();
         }
         private void CancelButton_Click(object sender, RoutedEventArgs e)
@@ -170,6 +177,30 @@ namespace Deepseek
                 }
             }
             return "";
+        }
+
+        private void OnChangedWC(object sender, RoutedEventArgs e)
+        {
+            CalcToken();
+        }
+        private void OnChangedWQ(object sender, RoutedEventArgs e)
+        {
+            CalcToken();
+        }
+
+        private void CalcToken(bool temp=true)
+        {
+            if (!Initializ) { return; }
+            if (temp)
+            {
+                int.TryParse(WordsCountMaxChankContextTextBox.Text, out int val);
+                int.TryParse(WordsCountMaxTextBox.Text, out int val2);
+                AllTokens.Text = "=>Всего токенов "  +(int)((val+val2)*ChatData._wordToToken) + " не превысь возможность ИИ-чата!";
+            }
+            else
+            {
+                AllTokens.Text = "=>Всего токенов " + (int)(_mainWindow.chatData.AllTokensWords)+" не превысь возможность ИИ-чата!";
+            }
         }
     }
 }

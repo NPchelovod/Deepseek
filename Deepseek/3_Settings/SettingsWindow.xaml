@@ -18,6 +18,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
 		</Grid.RowDefinitions>
 		<Grid.ColumnDefinitions>
@@ -107,19 +108,25 @@
 Margin="0,0,5,5"
 VerticalAlignment="Center"
 Text="2500"
+                 TextChanged="OnChangedWC"
 HorizontalAlignment="Left" Width="80"/>
 
         <!-- Новое поле: количество слов в разбивке -->
             <TextBlock Grid.Row="12" Grid.Column="0" Text="WQ Макс количество слов в истории диалога с ИИ:" VerticalAlignment="Center" Margin="0,0,10,5"
        ToolTip="считай предыдущий диалог урежется под WQ слов, надо чтобы WQ+WC не превышали кол-во токенов"/>
             <TextBox Grid.Row="12" Grid.Column="1" x:Name="WordsCountMaxTextBox"
+                     TextChanged="OnChangedWQ"
      Margin="0,0,5,5"
      VerticalAlignment="Center"
      Text="1500"
      HorizontalAlignment="Left" Width="80"/>
+
+        <TextBlock Grid.Row="13" Grid.ColumnSpan="3" Text="=>Всего токенов"  x:Name="AllTokens"
+                   ToolTip="Не превышать максимальное кол-во токенов модели ИИ-чата!"
+           FontWeight="Bold" Margin="0,0,0,15"/>
         
         <!-- Кнопки сохранения/отмены -->
-		<StackPanel Grid.Row="13" Grid.ColumnSpan="3" Orientation="Horizontal"
+		<StackPanel Grid.Row="14" Grid.ColumnSpan="3" Orientation="Horizontal"
                     HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,10,0,0">
 			<Button Content="Сохранить" Width="80" Margin="0,0,10,0" Click="SaveButton_Click"/>
 			<Button Content="Отмена" Width="80" Click="CancelButton_Click"/>

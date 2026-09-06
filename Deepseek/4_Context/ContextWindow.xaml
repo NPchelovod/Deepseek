@@ -8,7 +8,18 @@
         Title="Контекст из документов (релевантная выборка) который подавался для ИИ-чата чтобы он сформировал ответ" Height="450" Width="800"
         WindowStartupLocation="CenterOwner">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <!-- Область чата -->
+       
         <TextBox x:Name="ContextTextBox"
+                 Grid.Row="0"
+                 
+                 
                  AcceptsReturn="True"
                  AcceptsTab="True"
                  TextWrapping="Wrap"
@@ -18,5 +29,13 @@
                  FontSize="13"
                  Margin="10"
                  IsReadOnly="False"/>
+
+        <CheckBox x:Name="UseContextCheckBox" Grid.Row="1" Content="Дать полный Prompt (запрос) с учётом всего контекста (Истории пользователя) который подавался ИИ" 
+          VerticalAlignment="Center" 
+          Checked="GetAllContextCheckBox_Changed" Unchecked="GetAllContextCheckBox_Changed"
+          Margin="0,0,10,0"
+           ToolTip="Дать полный промпт запроса, который отправлялся Векторному ИИ и ИИ-чату"/>
+
+
     </Grid>
 </Window>

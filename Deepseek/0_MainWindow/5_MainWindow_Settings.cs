@@ -1,7 +1,10 @@
 ﻿using Deepseek;
+using Deepseek;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Microsoft.Win32; // Для OpenFileDialog
 using System;
 using System.Collections.Generic;
+using System.Diagnostics; // добавить в using
 using System.IO;
 using System.Net.Http;
 using System.Text;
@@ -10,8 +13,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using System.Diagnostics; // добавить в using
-using Deepseek;
 namespace OllamaChat
 {
     public partial class MainWindow
@@ -20,7 +21,8 @@ namespace OllamaChat
         {
             if (!File.Exists(chatData.settingsPath))
             {
-                SaveFile();
+                await SaveFile();
+                LoadSettingsToWind();
                 return;
             }
             try
@@ -33,17 +35,18 @@ namespace OllamaChat
 
                 chatData = incomingChatData;//так много проще
                 chatData.ChangeId();
-                foreach (var s in chatData.ConversationHistory)
-                {
-                    ChatBox.AppendText($"{s.GetAnswerText()}\n\n");
-                }
+                LoadSettingsToWind();
+
+
             }
             catch (Exception ex) // На всякий случай
             {
+                chatData.Errors.Text += $"\nВ InitializeSettings() {ex.Message}";
                 Debug.WriteLine($"Unexpected error: {ex.Message}");
                 try
                 {
-                    SaveFile();
+                    await SaveFile();
+                    LoadSettingsToWind();
                 }
                 catch
                 {
@@ -52,7 +55,27 @@ namespace OllamaChat
             }
 
         }
-        private void ClearHistoryButton_Click(object sender, RoutedEventArgs e)
+
+        private void LoadSettingsToWind()
+        {
+            foreach (var s in chatData.ConversationHistory)
+            {
+                ChatBox.AppendText($"{s.GetAnswerText()}\n\n");
+            }
+
+            //теперь настройки копируем
+            UseContextCheckBox.IsChecked = chatData.UseCommonContext;
+            QuoteFromKnowledgeBaseCheckBox.IsChecked = chatData.OnlyUseCommonContext;
+
+
+            UseHistoryVopros.IsChecked=chatData.UseHistoryVopros;
+            UseOnlyRelevantHistoryInVopros.IsChecked = chatData.UseOnlyRelevantHistoryInVopros;
+            UseOnlyYourQuestion.IsChecked = chatData.UseOnlyYourQuestionInHistory;
+
+            IsAdminCheckBox.IsChecked = chatData.IsAdminCheckBox;
+
+        }
+        private async void ClearHistoryButton_Click(object sender, RoutedEventArgs e)
         {
             //очистка истории
             //chatData = new ChatData(chatData);
@@ -60,27 +83,27 @@ namespace OllamaChat
             ChatBox.Clear();
             if (File.Exists(chatData.settingsPath))
             {
-                File.Delete(chatData.settingsPath);
+                 File.Delete(chatData.settingsPath);
             }
             //сохранение файла
-            SaveFile();
+            await SaveFile();
         }
 
-        private void SettingsButton_Click(object sender, RoutedEventArgs e)
+        private async void SettingsButton_Click(object sender, RoutedEventArgs e)
         {
             // открытие SettingsWindow.
             var sW = new SettingsWindow(this);
             sW.Show();
 
-            SaveFile();
+            await SaveFile();
 
         }
 
-        public void SaveFile()
+        public async Task SaveFile()
         {
             var options = new JsonSerializerOptions { IncludeFields = true, WriteIndented = true };
             string outJson = JsonSerializer.Serialize(chatData, options);
-            File.WriteAllTextAsync(chatData.settingsPath, outJson);
+            await File.WriteAllTextAsync(chatData.settingsPath, outJson);
         }
     }
 }

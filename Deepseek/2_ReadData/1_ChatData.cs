@@ -12,8 +12,9 @@ namespace Deepseek
     public enum ESenders
     {
         User=0,
-        AI_Chat,
-        AI_Prompt,
+        AI_Chat=1,
+        AI_Prompt=2,
+        AI_Prompt_And_User_Questions,
         Errors
     }
     public class ChatElement
@@ -37,9 +38,14 @@ namespace Deepseek
                 case ESenders.AI_Chat:
                     answer = "AI #" + Id + ":" + answer;
                     break;
-                 case ESenders.AI_Prompt:
+                case ESenders.AI_Prompt_And_User_Questions:
+                case ESenders.AI_Prompt:
                     answer = "Вы #" + Id + ":"+$"\n{PromptQuestion}" + "\nAI #" + Id + ":" + answer;
                     break;
+                    case ESenders.Errors:
+                    answer = "Errors #" + Id + ":" + Text;
+                        break;
+                
                 default:
                     break;
             }
@@ -77,28 +83,31 @@ namespace Deepseek
         public string ModelII { get; set; } = "qwen2.5:7b-instruct-q4_K_M";//"gemma2:9b",//"qwen2.5:32b-instruct-q4_K_M",//"deepseek-r1:8b",
 
         public string EmbeddingModel = "qwen3-embedding:8b";// "nomic-embed-text-v2-moe";// qwen3-embedding:8b";
-        public int SimvolsVoprosMax { get; set; } = 2000;
-        public double WordVoprosMax { get => SimvolsVoprosMax / 6.0; set => SimvolsVoprosMax =(int)( value * 6.0); }
+        public int SimvolsVoprosMax { get; set; } = 4000;
+        public double WordVoprosMax { get => SimvolsVoprosMax / _simvolsToWord; set => SimvolsVoprosMax =(int)( value * _simvolsToWord); }
 
-        public int SimvolsContextMax { get; set; } = 2000;
-        public double WordContextMax { get => SimvolsContextMax / 6.0; set => SimvolsContextMax = (int)(value * 6.0); }
+        public int SimvolsContextMax { get; set; } = 900*4*6;
+        public double WordContextMax { get => SimvolsContextMax / _simvolsToWord; set => SimvolsContextMax = (int)(value * _simvolsToWord); }
 
+        public const double _simvolsToWord = 6.0;
+        public const double _wordToToken = 1.2;
+        public int AllTokensWords => (int)((WordVoprosMax + WordContextMax) * _wordToToken);//всего токенов сколько может быть
 
         public bool UseCommonContext { get; set; } = false;// вгружать ли в себя файлы
 
         public bool OnlyUseCommonContext { get; set; } = false;//не использовать ИИ-чат
 
-        public bool
+        public bool UseHistoryVopros { get; set; } =true;//использовать историю вопросво
 
 
-
-
+        public bool UseOnlyRelevantHistoryInVopros { get; set; } = true;//использовать историю вопросво
+        public bool UseOnlyYourQuestionInHistory { get; set; }=true;
         public bool IsAdminCheckBox { get; set; } = false;
 
         public List<ChatElement> ConversationHistory { get; set; } = new List<ChatElement>(); // История диалога
 
         public ChatElement AnswerPromptVector { get; set; } =null;// ответ промежуточной ИИ на вопрос
-
+        public ChatElement AnswerAndQuestionsPromptVector { get; set; } = null;// ответ промежуточной ИИ на вопрос
         public ChatElement Errors { get; set; } = null;
         //public ChatElement 
 

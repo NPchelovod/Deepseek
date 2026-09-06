@@ -29,12 +29,36 @@ namespace Deepseek
         }
         private void SettingsWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            if (_mainWindow.chatData.AnswerPromptVector != null)
+            ContextTextBox.Text = GetAnswer();
+        }
+
+        private void GetAllContextCheckBox_Changed(object sender, RoutedEventArgs e)
+        {
+            //перестраиваем запрос
+            ContextTextBox.Text = GetAnswer(true);
+        }
+
+        private string GetAnswer(bool allPromptAndQ=false)
+        {
+            ChatElement chatElement = null;
+            if (!allPromptAndQ) 
+            {
+                chatElement = _mainWindow.chatData.AnswerPromptVector;
+            }
+            else
+            {
+                chatElement = _mainWindow.chatData.AnswerAndQuestionsPromptVector;
+            }
+               
+            if (chatElement != null)
             {
                 string answer = _mainWindow.chatData.AnswerPromptVector.GetAnswerText();
                 answer += "\n" + _mainWindow.chatData.AnswerPromptVector.GetTime;
-                ContextTextBox.Text = answer;
+                
+                return answer;
             }
+            return "";
         }
+       
     }
 }

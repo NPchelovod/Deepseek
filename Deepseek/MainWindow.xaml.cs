@@ -37,7 +37,7 @@ namespace OllamaChat
         private void SettingsWindow_Loaded(object sender, RoutedEventArgs e)
         {
             InitializeAnswerUsers();
-            InitializeAnswerAdmin();
+            
             InitializeSettings();//загрузка начальной модели старой преднастройке
             // Установка модели в ComboBox в соответствии с chatData.ModelII
             foreach (ComboBoxItem item in ModelComboBox.Items)
@@ -49,7 +49,7 @@ namespace OllamaChat
                 }
             }
             //MaxTokensTextBox.Text = chatData.SimvolsVoprosMax.ToString();
-            IsAdminCheckBox.IsChecked = chatData.IsAdminCheckBox;
+            
         }
 
 
@@ -60,23 +60,7 @@ namespace OllamaChat
         private bool _suppressMaxTokensTextChanged = false;
 
         // Обработчик изменения текста в MaxTokensTextBox
-        private void MaxTokensTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (_suppressMaxTokensTextChanged) return;
-            if(chatData==null) return;
-            //if (int.TryParse(MaxTokensTextBox.Text, out int value) && value > 0)
-            //{
-            //    chatData.WordVoprosMax = value;
-            //}
-            //else
-            //{
-            //    // Если введено некорректное значение, возвращаем предыдущее корректное
-            //    _suppressMaxTokensTextChanged = true;
-            //   // MaxTokensTextBox.Text = chatData.WordVoprosMax.ToString();
-            //   // MaxTokensTextBox.CaretIndex = MaxTokensTextBox.Text.Length;
-            //    _suppressMaxTokensTextChanged = false;
-            //}
-        }
+       
         // Обработчик выбора модели в ComboBox
         private void ModelComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -105,7 +89,9 @@ namespace OllamaChat
             if (UseHistoryVopros.IsChecked == false)
             {
                 UseOnlyRelevantHistoryInVopros.IsChecked = false;
+                UseOnlyYourQuestion.IsChecked = false;
             }
+            chatData.UseHistoryVopros = UseHistoryVopros.IsChecked == true;
         }
         private void UseOnlyRelevantHistoryInVopros_Changed(object sender, RoutedEventArgs e)
         {
@@ -113,8 +99,16 @@ namespace OllamaChat
             {
                 UseHistoryVopros.IsChecked = true;
             }
+            chatData.UseOnlyRelevantHistoryInVopros = UseOnlyRelevantHistoryInVopros.IsChecked == true;
         }
-
+        private void  UseOnlyYourQuestion_Changed(object sender, RoutedEventArgs e)
+        {
+            if(UseOnlyYourQuestion.IsChecked==true)
+            {
+                UseHistoryVopros.IsChecked = true;
+            }
+            chatData.UseOnlyYourQuestionInHistory = UseOnlyYourQuestion.IsChecked == true;
+        }
         private void IsAdminCheckBox_Changed(object sender, RoutedEventArgs e)
         {
             chatData.IsAdminCheckBox = IsAdminCheckBox.IsChecked == true;
@@ -123,13 +117,18 @@ namespace OllamaChat
             {
                 //реализуем подписку на вопросы и ответ пользователю
                 //предупереждение пользователю, Внимание ...
+                InitializeAnswerAdmin();
             }
             else
             {
+                if (scanerAnswerA != null)
+                {
+                    scanerAnswerA.Stop();//чтобы перезаписаться
+                }
                 //отписка если была на папки и тд
             }
         }
-        private async void ViewContextButton_Click(object sender, RoutedEventArgs e)
+        private  void ViewContextButton_Click(object sender, RoutedEventArgs e)
         {
             // открытие SettingsWindow.
             var sW = new ContextWindow(this);
@@ -143,13 +142,35 @@ namespace OllamaChat
 
             chatData = new ChatData();
             ClearHistoryButton_Click(sender, e);
-
+            LoadSettingsToWind();
         }
 
 
         private void RollbackDeepseekButton_Click(object sender, RoutedEventArgs e)
         {
             //открыть окно в браузере дипсика
+        }
+
+
+        private void ErrorsButton_Click(object sender, RoutedEventArgs e)
+        {
+            ErrorsWriter();
+        }
+        private void ErrorsWriter()
+        {
+            //открытие окна с ошибками или запись всех ошибок??
+            string answer = "";
+            if (chatData.Errors == null || string.IsNullOrEmpty(chatData.Errors.Text))
+            {
+                answer = $"Errors #{chatData.Id}: Ошибок нет";
+
+            }
+            else
+            {
+                answer = chatData.Errors.GetAnswerText();
+            }
+            if(ChatBox.Text.Contains(answer)) {return; }
+            AddMessage(answer, chatData);
         }
         private void QuoteFromKnowledgeBaseCheckBox_Changed(object sender, RoutedEventArgs e)
         {
@@ -164,20 +185,8 @@ namespace OllamaChat
         }
 
 
-
-
-
-
-
-
-
         //тут мы получаем и отвечаем на вопросы все польхователей
-
-
-
-
-
-
+        
         private void AddMessage(string message, ChatData chatData)
         {
             // Очищаем сообщение от тегов <think> и служебных префиксов
@@ -187,94 +196,6 @@ namespace OllamaChat
             ChatBox.ScrollToEnd();
         }
 
-        // ==================== ГЕНЕРАЦИЯ ОТВЕТА (ПОТОКОВАЯ) ====================
-
-        private async Task<string> GenerateTextStreamAsync(string prompt, ChatData outChatData)
-        {
-            var fullResponse = new StringBuilder();
-            bool inThinkTag = false;
-
-            try
-            {
-                var requestData = new
-                {
-                    model = outChatData.ModelII,
-                    prompt = prompt,
-                    temperature = 0.7,
-                    max_tokens = Math.Min(3000, outChatData.WordVoprosMax*2),//max_tokens_для_ответа = лимит_контекста - токены_в_промпте 1024 безопасный вариант
-                    stream = true,
-                   // keep_alive = "10h"   // или "24h", "-1" для постоянного удержания
-                };
-
-                var json = JsonSerializer.Serialize(requestData);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                var response = await _httpClient.PostAsync(OllamaApiUrl, content);
-                response.EnsureSuccessStatusCode();
-
-                using (var streamReader = new StreamReader(await response.Content.ReadAsStreamAsync()))
-                {
-                    string line;
-                    while ((line = await streamReader.ReadLineAsync()) != null)
-                    {
-                        if (!string.IsNullOrEmpty(line))
-                        {
-                            try
-                            {
-                                using JsonDocument document = JsonDocument.Parse(line);
-                                JsonElement root = document.RootElement;
-
-                                if (root.TryGetProperty("response", out JsonElement responseProperty))
-                                {
-                                    var token = responseProperty.GetString();
-
-                                    // Пропускаем содержимое тегов <think>
-                                    if (token.Contains("<think>"))
-                                    {
-                                        inThinkTag = true;
-                                        continue;
-                                    }
-                                    else if (token.Contains("</think>"))
-                                    {
-                                        inThinkTag = false;
-                                        continue;
-                                    }
-                                    else if (inThinkTag)
-                                    {
-                                        continue; // Пропускаем содержимое внутри тегов
-                                    }
-
-                                    // Пропускаем служебные префиксы, если модель их повторяет
-                                    if (token.StartsWith("AI:") || token.StartsWith("Вы:"))
-                                        continue;
-
-                                    fullResponse.Append(token);
-
-                                    // Выводим токен в реальном времени
-                                    //Dispatcher.Invoke(() =>
-                                    //{
-                                    //    ChatBox.AppendText(token);
-                                    //    ChatBox.ScrollToEnd();
-                                    //});
-                                }
-
-                                if (root.TryGetProperty("done", out JsonElement doneProperty) &&
-                                    doneProperty.GetBoolean())
-                                {
-                                    break;
-                                }
-                            }
-                            catch (JsonException) { /* Игнорируем некорректные JSON-строки */ }
-                        }
-                    }
-                }
-
-                return fullResponse.ToString();
-            }
-            catch (Exception ex)
-            {
-                return $"Error: {ex.Message}";
-            }
-        }
+        
     }
 }

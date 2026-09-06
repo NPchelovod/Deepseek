@@ -19,9 +19,16 @@ namespace OllamaChat
 {
     public partial class MainWindow
     {
+        
+        PeriodicFolderScanner scanerAnswerA = null;
         public void InitializeAnswerAdmin()
         {
-            var scanner = new PeriodicFolderScanner(
+            if (scanerAnswerA != null)
+            {
+                scanerAnswerA.Stop();//чтобы перезаписаться
+            }
+            //подписка на папку
+            scanerAnswerA = new PeriodicFolderScanner(
                 folderPath:chatData.inboxPath,
                 fileProcessor: async filePath =>
                 {
@@ -30,8 +37,11 @@ namespace OllamaChat
                 },
                 intervalMs: 2000
             );
-            scanner.Start();
+            scanerAnswerA.Start();
         }
+
+        
+
         private async Task ProcessQuestionAdminFileAsync(string filePath)
         {
             if (!chatData.IsAdminCheckBox) {  return; }
@@ -235,33 +245,132 @@ namespace OllamaChat
 
 
 
-                //// 2. Контекст из файлов (если есть)
-                //if (!string.IsNullOrWhiteSpace(outChatData.ContextFromFiles) && outChatData.UseCommonContext)
-                //{
-                //    // Берём первые N символов, чтобы не превысить лимит модели.
-                //    // Вы можете настроить N в зависимости от модели и её контекстного окна.
-                //    int maxContextLength = outChatData.SimvolsVoprosMax;
-                //    string context = outChatData.ContextFromFiles.Length > maxContextLength
-                //        ? outChatData.ContextFromFiles.Substring(0, maxContextLength)
-                //        : outChatData.ContextFromFiles;
-
-                //    promptBuilder.AppendLine("=== КОНТЕКСТ ИЗ ФАЙЛОВ ===");
-                //    promptBuilder.AppendLine(context);
-                //    promptBuilder.AppendLine("=== КОНЕЦ КОНТЕКСТА ===");
-                //    promptBuilder.AppendLine();
-                //}
-
-                // 3. История диалога (последние 10 сообщений)
-                //int startIndex = Math.Max(0, outChatData.ConversationHistory.Count - 10);
-                //for (int i = startIndex; i < outChatData.ConversationHistory.Count; i++)
-                //{
-                //    promptBuilder.AppendLine(outChatData.ConversationHistory[i]);
-                //}
 
                 // 4. Маркер для ответа ИИ
                 promptBuilder.Append("AI: ");
 
             return promptBuilder.ToString();
+        }
+
+        private string GetContextFileData(ChatData outChatData)
+        {
+            // Дальше тот же код загрузки, что и раньше
+            if (!outChatData.UseCommonContext)
+            {
+                return "";
+            }
+            else
+            {
+                try
+                {
+                    var extracted = TextExtractor.ExtractAllTextFromDirectory(outChatData.promptFolder);
+                    var sb = new StringBuilder();
+                    foreach (var file in extracted)
+                    {
+                        sb.AppendLine($"=== {file.FileName} ===");
+                        sb.AppendLine(file.Text);
+                        sb.AppendLine();
+                    }
+                    //UseContextCheckBox.IsChecked = true;
+                    return sb.ToString();
+                    /*MessageBox.Show($"Загружено {extracted.Count} файлов.", "Готово", MessageBoxButton.OK, *///MessageBoxImage.Information);
+
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.MessageBox.Show($"Ошибка загрузки: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return "";
+                }
+            }
+        }
+        // ==================== ГЕНЕРАЦИЯ ОТВЕТА (ПОТОКОВАЯ) ====================
+
+        private async Task<string> GenerateTextStreamAsync(string prompt, ChatData outChatData)
+        {
+            var fullResponse = new StringBuilder();
+            bool inThinkTag = false;
+
+            try
+            {
+                var requestData = new
+                {
+                    model = outChatData.ModelII,
+                    prompt = prompt,
+                    temperature = 0.7,
+                    max_tokens = Math.Max(2100, outChatData.AllTokensWords),//max_tokens_для_ответа = лимит_контекста - токены_в_промпте 1024 безопасный вариант
+                    stream = true,
+                    // keep_alive = "10h"   // или "24h", "-1" для постоянного удержания
+                };
+
+                var json = JsonSerializer.Serialize(requestData);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync(OllamaApiUrl, content);
+                response.EnsureSuccessStatusCode();
+
+                using (var streamReader = new StreamReader(await response.Content.ReadAsStreamAsync()))
+                {
+                    string line;
+                    while ((line = await streamReader.ReadLineAsync()) != null)
+                    {
+                        if (!string.IsNullOrEmpty(line))
+                        {
+                            try
+                            {
+                                using JsonDocument document = JsonDocument.Parse(line);
+                                JsonElement root = document.RootElement;
+
+                                if (root.TryGetProperty("response", out JsonElement responseProperty))
+                                {
+                                    var token = responseProperty.GetString();
+
+                                    // Пропускаем содержимое тегов <think>
+                                    if (token.Contains("<think>"))
+                                    {
+                                        inThinkTag = true;
+                                        continue;
+                                    }
+                                    else if (token.Contains("</think>"))
+                                    {
+                                        inThinkTag = false;
+                                        continue;
+                                    }
+                                    else if (inThinkTag)
+                                    {
+                                        continue; // Пропускаем содержимое внутри тегов
+                                    }
+
+                                    // Пропускаем служебные префиксы, если модель их повторяет
+                                    if (token.StartsWith("AI:") || token.StartsWith("Вы:"))
+                                        continue;
+
+                                    fullResponse.Append(token);
+
+                                    // Выводим токен в реальном времени
+                                    //Dispatcher.Invoke(() =>
+                                    //{
+                                    //    ChatBox.AppendText(token);
+                                    //    ChatBox.ScrollToEnd();
+                                    //});
+                                }
+
+                                if (root.TryGetProperty("done", out JsonElement doneProperty) &&
+                                    doneProperty.GetBoolean())
+                                {
+                                    break;
+                                }
+                            }
+                            catch (JsonException) { /* Игнорируем некорректные JSON-строки */ }
+                        }
+                    }
+                }
+
+                return fullResponse.ToString();
+            }
+            catch (Exception ex)
+            {
+                return $"Error: {ex.Message}";
+            }
         }
     }
 }
