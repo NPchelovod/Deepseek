@@ -73,8 +73,12 @@ namespace OllamaChat
                 }
 
                 // Шаг 3: Сформировать полный промпт с учётом контекста и истории
+                incomingChatData.AnswerPromptVector = null;// на всякий случай
+                incomingChatData.AnswerAndQuestionsPromptVector = null;// на всякий случай
+
                 string fullPrompt = await BuildPromptWithHistory(incomingChatData);
 
+                string response = "";
                 if (incomingChatData.OnlyUseCommonContext && incomingChatData.UseCommonContext)
                 {
                     //мы не входим во второй ИИ который требует ресурса
@@ -82,12 +86,21 @@ namespace OllamaChat
                 else
                 {
                     // Шаг 4: Вызвать генерацию ответа (потоковую), передавая модель и другие параметры
-                    string response = await GenerateTextStreamAsync(fullPrompt, incomingChatData);
+                    response = await GenerateTextStreamAsync(fullPrompt, incomingChatData);
 
                     // Шаг 5: Добавить ответ в историю диалога
-                    incomingChatData.ConversationHistory.Add(new ChatElement { Text = response, Id= incomingChatData.Id, Senders=ESenders.AI_Chat });
+                    incomingChatData.ConversationHistory.Add(new ChatElement { Text = response, Id= incomingChatData.Id, Senders=ESenders.AI_Chat, StartTime=DateTime.Now });
                     
                 }
+
+                incomingChatData.AnswerAndQuestionsPromptVector = new ChatElement()
+                {
+                    Text = fullPrompt+"\n"+response,
+                    Id = incomingChatData.Id,
+                    Senders = ESenders.AI_Prompt_And_User_Questions,
+                    StartTime = DateTime.Now
+                };
+
 
                 // Шаг 6: Сохранить обновлённый ChatData в папку ответов
                 string outFilePath = Path.Combine(incomingChatData.outboxPath, incomingChatData.GetFileName);
@@ -187,14 +200,11 @@ namespace OllamaChat
 
         private async Task<string> BuildPromptWithHistory(ChatData outChatData)
         {
-            var promptBuilder = new StringBuilder();
-
-            outChatData.AnswerPromptVector = null;// на всякий случай
-
             if (outChatData.ConversationHistory.Count == 0)
             {
                 return "";
             }
+            var promptBuilder = new StringBuilder();
 
             string question =await GetQuestions(outChatData);
             

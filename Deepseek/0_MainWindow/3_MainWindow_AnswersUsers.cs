@@ -71,11 +71,27 @@ namespace OllamaChat
 
                 chatData = incomingChatData;//приравниваем их чтобы развитие было
 
+                //возможно null
+                bool aiExist = false;
+                bool apvExist = false;
+                bool apvqExist = false;
+
+                ChatElement aiMessageAnswer = incomingChatData.ConversationHistory.Where(x => x.Id == incomingChatData.Id && x.Senders == ESenders.AI_Chat).LastOrDefault();
+                if (aiMessageAnswer != null)
+                {
+                    aiExist=true;
+                    aiMessageAnswer.EndTime = DateTime.Now;
+                }
                 if(chatData.AnswerPromptVector!=null)
                 {
+                    apvExist=true;
                     chatData.AnswerPromptVector.EndTime = DateTime.Now;
                 }
-
+                if(chatData.AnswerAndQuestionsPromptVector!=null)
+                {
+                    apvqExist =true;
+                    chatData.AnswerAndQuestionsPromptVector.EndTime = DateTime.Now;
+                }
 
 
                 if (chatData.OnlyUseCommonContext && chatData.UseCommonContext && chatData.AnswerPromptVector != null && chatData.Id == chatData.AnswerPromptVector.Id)
@@ -92,14 +108,13 @@ namespace OllamaChat
                 {
                     // Шаг 4: Извлекаем последнее сообщение от ИИ
                     // История содержит записи вида "User: ..." и "AI: ..."
-                    ChatElement aiMessageCE = incomingChatData.ConversationHistory.Where(x => x.Id == incomingChatData.Id && x.Senders == ESenders.AI_Chat).LastOrDefault();
-
+                   
                     string aiMessage = "";
-                    if (aiMessageCE != null)
+                    if (aiMessageAnswer != null)
                     {
-                        aiMessageCE.EndTime = DateTime.Now;
-                        aiMessage = aiMessageCE.GetAnswerText();
-                        aiMessage += $"\n{aiMessageCE.GetTime}";//время овтета
+                       
+                        aiMessage = aiMessageAnswer.GetAnswerText();
+                        aiMessage += $"\n{aiMessageAnswer.GetTime}";//время овтета
                     }
 
                     if (string.IsNullOrEmpty(aiMessage))

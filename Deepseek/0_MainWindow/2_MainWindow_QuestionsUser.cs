@@ -65,12 +65,7 @@ namespace OllamaChat
             }
 
 
-            chatData.Errors = new ChatElement() 
-            { 
-                Senders=ESenders.Errors,
-                StartTime = DateTime.Now,
-                Id = chatData.Id,
-            };//обнуление для сбора ошибок
+            chatData.Errors = null;//обнуление для сбора ошибок
 
             // Добавляем сообщение пользователя в историю
             var sms = new ChatElement()
@@ -87,7 +82,7 @@ namespace OllamaChat
 
             InputBox.Clear();
 
-            //удаляем прошлые вопросы 
+            //удаляем прошлые вопросы из директории
             DeleteAllMessage(chatData.inboxPath, chatData);
 
             //сохранение данных

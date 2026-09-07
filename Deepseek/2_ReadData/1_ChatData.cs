@@ -105,10 +105,25 @@ namespace Deepseek
         public bool IsAdminCheckBox { get; set; } = false;
 
         public List<ChatElement> ConversationHistory { get; set; } = new List<ChatElement>(); // История диалога
+       
+        public ChatElement AnswerPromptVector = null; // ответ промежуточной ИИ на вопрос
 
-        public ChatElement AnswerPromptVector { get; set; } =null;// ответ промежуточной ИИ на вопрос
-        public ChatElement AnswerAndQuestionsPromptVector { get; set; } = null;// ответ промежуточной ИИ на вопрос
-        public ChatElement Errors { get; set; } = null;
+        public ChatElement AnswerAndQuestionsPromptVector = null;// ответ промежуточной ИИ на вопрос + ответ ИИ чата и весь контекст одним словом
+        
+        public ChatElement _errors { get; set; } = null;
+        public ChatElement Errors
+        {
+            get
+            {
+                if (_errors == null)
+                {
+                    _errors = new ChatElement() { Id = Id, Senders = ESenders.Errors, StartTime = DateTime.Now };
+                 }
+                return _errors;
+            }
+            set =>_errors = value;
+        }
+
         //public ChatElement 
 
         //public string ContextFromFiles { get; set; } = "";
@@ -164,6 +179,7 @@ namespace Deepseek
             ConversationHistory.Clear();
             Errors = null;
             AnswerPromptVector = null;
+            AnswerAndQuestionsPromptVector = null;
         }
     }
 

@@ -34,8 +34,15 @@ namespace Deepseek
 
         private void GetAllContextCheckBox_Changed(object sender, RoutedEventArgs e)
         {
-            //перестраиваем запрос
-            ContextTextBox.Text = GetAnswer(true);
+            if (UseContextCheckBox.IsChecked == true)
+            {
+                //перестраиваем запрос
+                ContextTextBox.Text = GetAnswer(true);
+            }
+            else
+            {
+                ContextTextBox.Text = GetAnswer();
+            }
         }
 
         private string GetAnswer(bool allPromptAndQ=false)
@@ -57,7 +64,11 @@ namespace Deepseek
                 
                 return answer;
             }
-            return "";
+            if (!allPromptAndQ)
+            {
+                return "=>Пусто 1";
+            }
+            return "=>Пусто 2";
         }
        
     }
