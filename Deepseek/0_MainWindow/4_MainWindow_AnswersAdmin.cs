@@ -123,7 +123,7 @@ namespace OllamaChat
         private async Task<string> GetQuestions(ChatData outChatData)//последний ответ пользователя
         {
             int MaxPastAnswers = outChatData.LastMessageInQuestion;
-            ChatElement UsMessageCE = outChatData.ConversationHistory.Where(x => x.Id == chatData.Id && x.Senders == ESenders.User).LastOrDefault();
+            ChatElement UsMessageCE = outChatData.ConversationHistory.Where(x => x.Id == outChatData.Id && x.Senders == ESenders.User).LastOrDefault();
             string question = "";
             if (UsMessageCE != null)
             {

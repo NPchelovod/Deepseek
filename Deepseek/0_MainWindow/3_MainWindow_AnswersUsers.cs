@@ -92,7 +92,7 @@ namespace OllamaChat
                 {
                     // Шаг 4: Извлекаем последнее сообщение от ИИ
                     // История содержит записи вида "User: ..." и "AI: ..."
-                    ChatElement aiMessageCE = incomingChatData.ConversationHistory.Where(x => x.Id == chatData.Id && x.Senders == ESenders.AI_Chat).LastOrDefault();
+                    ChatElement aiMessageCE = incomingChatData.ConversationHistory.Where(x => x.Id == incomingChatData.Id && x.Senders == ESenders.AI_Chat).LastOrDefault();
 
                     string aiMessage = "";
                     if (aiMessageCE != null)
