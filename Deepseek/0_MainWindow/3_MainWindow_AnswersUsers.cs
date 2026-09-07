@@ -16,6 +16,8 @@ namespace OllamaChat
 {
     public partial class MainWindow
     {
+        //приём ответа от ИИ из папки
+
         PeriodicFolderScanner scanerAnswerU = null;
         public void InitializeAnswerUsers()
         {
@@ -24,16 +26,24 @@ namespace OllamaChat
                 scanerAnswerU.Stop();//чтобы перезаписаться
             }
 
-            scanerAnswerU = new PeriodicFolderScanner(
-                folderPath: chatData.outboxPath,
-                fileProcessor: async filePath =>
-                {
-                    // обработка файла
-                    await ProcessQuestionUserFileAsync(filePath);
-                },
-                intervalMs: 2000
-            );
-            scanerAnswerU.Start();
+            if (!Directory.Exists(chatData.outboxPath))
+            {
+                chatData.Errors.Text += $"\n Не существует пути outboxPath={chatData.outboxPath}";
+                ErrorsWriter();
+            }
+            else
+            {
+                scanerAnswerU = new PeriodicFolderScanner(
+                    folderPath: chatData.outboxPath,
+                    fileProcessor: async filePath =>
+                    {
+                        // обработка файла
+                        await ProcessQuestionUserFileAsync(filePath);
+                    },
+                    intervalMs: 2000
+                );
+                scanerAnswerU.Start();
+            }
         }
         private async Task ProcessQuestionUserFileAsync(string filePath)
         {
@@ -119,7 +129,9 @@ namespace OllamaChat
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка при обработке ответа: {ex.Message}");
+                chatData.Errors.Text += $"Неудача в получении ответа в ProcessQuestionUserFileAsync() {ex.Message}";
+                ErrorsWriter();
+                Debug.WriteLine($"\nОшибка при обработке ответа: {ex.Message}");
                 // Файл останется и будет повторно обработан при следующем сканировании 
             }
         }

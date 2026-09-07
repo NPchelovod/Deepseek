@@ -52,7 +52,7 @@
 		<Button Grid.Row="4" Grid.Column="2" Content="Обзор..." Padding="5,2" Margin="0,0,0,5" Click="BrowsePromptFolder_Click"/>
 
 		<!-- Префикс файлов -->
-		<TextBlock Grid.Row="5" Grid.Column="0" Text="МодельИИ:" VerticalAlignment="Center" Margin="0,0,10,5"
+		<TextBlock Grid.Row="5" Grid.Column="0" Text="Модель ИИ-чата:" VerticalAlignment="Center" Margin="0,0,10,5"
                    ToolTip="ИИ Используется для формирования окончательного ответа"/>
 		<TextBox Grid.Row="5" Grid.Column="1" x:Name="FileModelII"
                  Margin="0,0,5,5"
@@ -68,7 +68,7 @@
                  ToolTip="Адрес API Ollama"/>
 
         <!-- Префикс файлов -->
-        <TextBlock Grid.Row="7" Grid.Column="0" Text="МодельВекторИИ:" VerticalAlignment="Center" Margin="0,0,10,5"
+        <TextBlock Grid.Row="7" Grid.Column="0" Text="Модель ИИ-Embedding (Векторная ИИ БЗ):" VerticalAlignment="Center" Margin="0,0,10,5"
            ToolTip="ИИ Используется для формирования векторного контекста"/>
         <TextBox Grid.Row="7" Grid.Column="1" x:Name="FileModelVectorII"
          Margin="0,0,5,5"

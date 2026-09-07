@@ -43,7 +43,7 @@ namespace Deepseek
                     answer = "Вы #" + Id + ":"+$"\n{PromptQuestion}" + "\nAI #" + Id + ":" + answer;
                     break;
                     case ESenders.Errors:
-                    answer = "Errors #" + Id + ":" + Text;
+                    answer = "Errors #" + Id + ":" + (string.IsNullOrEmpty(Text)?" Ошибок нет" :Text);
                         break;
                 
                 default:

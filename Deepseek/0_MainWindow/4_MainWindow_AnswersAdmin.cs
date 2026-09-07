@@ -27,17 +27,26 @@ namespace OllamaChat
             {
                 scanerAnswerA.Stop();//чтобы перезаписаться
             }
-            //подписка на папку
-            scanerAnswerA = new PeriodicFolderScanner(
-                folderPath:chatData.inboxPath,
-                fileProcessor: async filePath =>
-                {
-                    // обработка файла
-                    await ProcessQuestionAdminFileAsync(filePath);
-                },
-                intervalMs: 2000
-            );
-            scanerAnswerA.Start();
+
+            if (!Directory.Exists(chatData.inboxPath))
+            {
+                chatData.Errors.Text += $"\n Не существует пути inboxPath={chatData.inboxPath}";
+                ErrorsWriter();
+            }
+            else
+            {
+                //подписка на папку
+                scanerAnswerA = new PeriodicFolderScanner(
+                    folderPath: chatData.inboxPath,
+                    fileProcessor: async filePath =>
+                    {
+                        // обработка файла
+                        await ProcessQuestionAdminFileAsync(filePath);
+                    },
+                    intervalMs: 2000
+                );
+                scanerAnswerA.Start();
+            }
         }
 
         

@@ -159,16 +159,17 @@ namespace OllamaChat
         private void ErrorsWriter()
         {
             //открытие окна с ошибками или запись всех ошибок??
-            string answer = "";
-            if (chatData.Errors == null || string.IsNullOrEmpty(chatData.Errors.Text))
+            if (chatData.Errors == null)
             {
-                answer = $"Errors #{chatData.Id}: Ошибок нет";
-
+                chatData.Errors = new ChatElement()
+                {
+                    Senders = ESenders.Errors,
+                    StartTime = DateTime.Now,
+                    Id = chatData.Id,
+                };
             }
-            else
-            {
-                answer = chatData.Errors.GetAnswerText();
-            }
+            string answer = chatData.Errors.GetAnswerText();
+            
             if(ChatBox.Text.Contains(answer)) {return; }
             AddMessage(answer, chatData);
         }
