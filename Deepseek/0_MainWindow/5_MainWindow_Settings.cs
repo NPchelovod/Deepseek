@@ -12,6 +12,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 namespace OllamaChat
 {
@@ -73,6 +74,17 @@ namespace OllamaChat
             UseOnlyYourQuestion.IsChecked = chatData.UseOnlyYourQuestionInHistory;
 
             IsAdminCheckBox.IsChecked = chatData.IsAdminCheckBox;
+
+            //комбобокса ИИ
+            // Находим элемент по старому значению
+            foreach (var item in ModelComboBox.Items)
+            {
+                if (item is ComboBoxItem cbItem && cbItem.Content.ToString() == chatData.ModelII)
+                {
+                    ModelComboBox.SelectedItem = cbItem;
+                    break;
+                }
+            }
 
         }
         private async void ClearHistoryButton_Click(object sender, RoutedEventArgs e)

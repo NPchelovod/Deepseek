@@ -56,7 +56,7 @@ namespace Deepseek
 
         public string GetTime =>   $"AI Time {(int)(EndTime - StartTime).TotalSeconds} сек";
 
-        public float[] Embedding { get; set; } = null; // можно заполнять при добавлении сообщения, чтобы определять косинусово сходство
+        public float[] Embedding { get; set; } = null; // можно заполнять при добавлении сообщения, чтобы определять косинусово сходство текущего вопроса
     }
 
     public class ChatData
@@ -173,7 +173,7 @@ namespace Deepseek
         public int _chunkWordSize { get; set; } = 900;//слов в одном текстве Средние чанки: 512–1024 токена (~400–800 слов).
         public int topK { get; set; } = 4;//выборка сообщений
 
-        public int LastMessageInQuestion { get; set; } = 1;//сколько последних сообщений в контекст вводить
+        public int LastMessageInQuestion { get; set; } = 20;//сколько последних сообщений в контекст вводить
         public void Clear()
         {
             ConversationHistory.Clear();

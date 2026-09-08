@@ -93,13 +93,13 @@ namespace OllamaChat
                     
                 }
 
-                incomingChatData.AnswerAndQuestionsPromptVector = new ChatElement()
-                {
-                    Text = fullPrompt+"\n"+response,
-                    Id = incomingChatData.Id,
-                    Senders = ESenders.AI_Prompt_And_User_Questions,
-                    StartTime = DateTime.Now
-                };
+                //incomingChatData.AnswerAndQuestionsPromptVector = new ChatElement()
+                //{
+                //    Text = fullPrompt+"\n"+response,
+                //    Id = incomingChatData.Id,
+                //    Senders = ESenders.AI_Prompt_And_User_Questions,
+                //    StartTime = DateTime.Now
+                //};
 
 
                 // Шаг 6: Сохранить обновлённый ChatData в папку ответов
@@ -154,8 +154,9 @@ namespace OllamaChat
                 //заполняем косинусовое сходство
                 questionEmbedding = await GetEmbeddingAsync(question, outChatData); // ваш метод
                 UsMessageCE.Embedding = questionEmbedding;
-
             }
+
+
             int maxSimvols= outChatData.SimvolsVoprosMax;
 
             //int maxSimvols = Math.Max(2000, outChatData.SimvolsVoprosMax -

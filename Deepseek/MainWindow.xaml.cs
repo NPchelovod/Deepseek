@@ -62,12 +62,46 @@ namespace OllamaChat
         // Обработчик изменения текста в MaxTokensTextBox
        
         // Обработчик выбора модели в ComboBox
+        private bool _isModelComboBox=false;
         private void ModelComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if(chatData != null && ModelComboBox.SelectedItem is ComboBoxItem selectedItem)
-             {
-                chatData.ModelII = selectedItem.Content.ToString();
+            if (_isModelComboBox) { return; }
+            _isModelComboBox=true;
+            bool ustan = false;
+            if (chatData != null && ModelComboBox.SelectedItem is ComboBoxItem selectedItem)
+            {
+                string mI = selectedItem.Content.ToString();
+                if (!string.IsNullOrEmpty(mI) && mI != chatData.ModelII)
+                {
+                    //chatData.ModelII = mI;
+
+                    //cb.SelectedItem = e.RemovedItems[0];
+                    if (chatData.IsAdminCheckBox || string.IsNullOrEmpty(chatData.ModelII))
+                    {
+                        chatData.ModelII = mI;
+                        ustan = true;
+                    }
+                    
+                }
             }
+            if(!ustan)
+            {
+                //откат
+                // Возвращаем предыдущий выбор, при инициализации простой откат не работает, поэтому так
+                var cb = (System.Windows.Controls.ComboBox)sender;
+                if (e.RemovedItems.Count > 0 && e.RemovedItems[0] is ComboBoxItem PastselectedItem)
+                {
+                    string pastChange = PastselectedItem.Content.ToString();
+                    if (pastChange == chatData.ModelII)
+                    {
+                        cb.SelectedItem = e.RemovedItems[0];
+                    }
+                }
+            }
+            _isModelComboBox= false;
+
+
+
         }
         private void UseContextCheckBox_Changed(object sender, RoutedEventArgs e)
         {

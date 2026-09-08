@@ -72,16 +72,28 @@ namespace OllamaChat
                 chatData = incomingChatData;//приравниваем их чтобы развитие было
 
                 //возможно null
+                bool uExist=false;
                 bool aiExist = false;
                 bool apvExist = false;
                 bool apvqExist = false;
 
+                ChatElement userMessageQuestion = incomingChatData.ConversationHistory.Where(x => x.Id == incomingChatData.Id && x.Senders == ESenders.User).LastOrDefault();
                 ChatElement aiMessageAnswer = incomingChatData.ConversationHistory.Where(x => x.Id == incomingChatData.Id && x.Senders == ESenders.AI_Chat).LastOrDefault();
+
+                string timeAnswer = "";
+                if(userMessageQuestion!=null)
+                {
+                    uExist = true;
+                    userMessageQuestion.EndTime = DateTime.Now;
+                    timeAnswer = userMessageQuestion.GetTime;
+                }
+
                 if (aiMessageAnswer != null)
                 {
                     aiExist=true;
                     aiMessageAnswer.EndTime = DateTime.Now;
                 }
+
                 if(chatData.AnswerPromptVector!=null)
                 {
                     apvExist=true;
@@ -110,19 +122,20 @@ namespace OllamaChat
                     // История содержит записи вида "User: ..." и "AI: ..."
                    
                     string aiMessage = "";
-                    if (aiMessageAnswer != null)
+                    if (!string.IsNullOrEmpty(aiMessage))
                     {
                        
                         aiMessage = aiMessageAnswer.GetAnswerText();
-                        aiMessage += $"\n{aiMessageAnswer.GetTime}";//время овтета
+                        if (!string.IsNullOrEmpty(timeAnswer))
+                        {
+                            aiMessage += $"\n{timeAnswer}";//время овтета
+                        }
                     }
-
-                    if (string.IsNullOrEmpty(aiMessage))
+                    else 
                     {
                         aiMessage = "=>Ошибка: Ответа нет в ProcessQuestionUserFileAsync()";
                     }
-                    
-
+           
                     // Шаг 5: Выводим ответ в UI (потокобезопасно)
                     await Dispatcher.InvokeAsync(() =>
                     {

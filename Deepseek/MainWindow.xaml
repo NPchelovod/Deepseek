@@ -40,7 +40,7 @@
                          Checked="QuoteFromKnowledgeBaseCheckBox_Changed" 
                          Unchecked="QuoteFromKnowledgeBaseCheckBox_Changed"
                          Margin="0,0,10,0"
-                         ToolTip="При ответе модель будет приводить цитаты из найденного контекста, не запуская ИИ-чат, только Векторная Embedding модель, !сокращение времени!, ответ размеров W*X"/>
+                         ToolTip="При ответе модель будет приводить цитаты из найденного контекста, не запуская ИИ-чат, только Векторная Embedding модель, !сокращение времени!, ответ размером W*X"/>
 
                 <Button Content="Загрузить папку БЗ" 
                         ToolTip="Папка Базы Знаний для поиска релевантного нашему вопросу контекста, сначала генерируется векторная БД на Embedding ИИ модели"
@@ -185,7 +185,7 @@ ToolTip="Будут использоваться ваши вопросы без 
                     <Button Content="Откат настроек" 
                             Click="RollbackSettingsButton_Click" 
                             Margin="0,0,5,0" Padding="5,2"
-                            ToolTip="Восстановить настройки из резервной копии"/>
+                            ToolTip="Восстановить настройки по умолчанию"/>
                     <Button Content="Настройки Разраб." 
                             Click="SettingsButton_Click" Padding="5,2"/>
                 </StackPanel>
