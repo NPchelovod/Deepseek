@@ -29,7 +29,7 @@ namespace OllamaChat
             try
             {
                 string json = await File.ReadAllTextAsync(chatData.settingsPath);
-                var incomingChatData = JsonSerializer.Deserialize<ChatData>(json);
+                var incomingChatData = JsonSerializer.Deserialize<ChatData>(json, OptionsJson);
                 if (incomingChatData == null) { return; }
 
                 //иначе копируем настройки начальные
@@ -113,8 +113,8 @@ namespace OllamaChat
 
         public async Task SaveFile()
         {
-            var options = new JsonSerializerOptions { IncludeFields = true, WriteIndented = true };
-            string outJson = JsonSerializer.Serialize(chatData, options);
+            
+            string outJson = JsonSerializer.Serialize(chatData, OptionsJson);
             await File.WriteAllTextAsync(chatData.settingsPath, outJson);
         }
     }

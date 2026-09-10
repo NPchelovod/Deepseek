@@ -88,11 +88,12 @@ namespace Deepseek
 
             if (newFiles.Any() || removedFiles.Count != 0)
             {
+               
                 await SaveChankData(this, mainWindow, chatData);
             }
 
-            string nameVectors = chatData.nameVectors;
-            AllChanks[nameVectors] = this;//сохраняем себя на всякий случай
+           
+           
 
             return _chunks;
         }
@@ -135,7 +136,7 @@ namespace Deepseek
                     {
                         var json = File.ReadAllText(jsonFile);
 
-                        chankData = JsonSerializer.Deserialize<ChankData>(json);
+                        chankData = JsonSerializer.Deserialize<ChankData>(json, MainWindow.OptionsJson);
                     }
                     catch { }
                 }
@@ -154,19 +155,19 @@ namespace Deepseek
                     //не наша ИИ модель вектора
                     chankData = new ChankData();
                 }
-                else if(!string.IsNullOrEmpty(jsonFile) && !jsonFile.Contains(chatData.nameVectors)) 
-                {
-                   await SaveChankData(chankData, mainWindow, chatData);
-                }
+                //else if(!string.IsNullOrEmpty(jsonFile) && !jsonFile.Contains(chatData.nameVectors)) 
+                //{
+                //   await SaveChankData(chankData, mainWindow, chatData);
+                //}
 
                 return chankData;
             }
-            
+
 
             // Если файла нет или он повреждён — создаём новую базу
-            var newData = new ChankData();
+            chankData = new ChankData();
             //await newData.GetChanks(mainWindow, chatData, allClear: true);
-            return newData;
+            return chankData;
         }
         
 
@@ -197,7 +198,7 @@ namespace Deepseek
                 Directory.CreateDirectory(folderVectors);
                 if (!Directory.Exists(folderVectors)) { return; }
             }
-            string json = JsonSerializer.Serialize(chankData, new JsonSerializerOptions { IncludeFields = true, WriteIndented = true });
+            string json = JsonSerializer.Serialize(chankData, MainWindow.OptionsJson);
             await File.WriteAllTextAsync(chatData.nameVectors, json);
         }
 

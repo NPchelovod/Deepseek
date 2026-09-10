@@ -33,7 +33,7 @@ namespace OllamaChat
 
         }
         public ChatData chatData=new ChatData();
-
+        public static JsonSerializerOptions OptionsJson = new JsonSerializerOptions { IncludeFields = true, WriteIndented = true };
         private void SettingsWindow_Loaded(object sender, RoutedEventArgs e)
         {
             InitializeAnswerUsers();

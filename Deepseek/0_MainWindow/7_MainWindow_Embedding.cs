@@ -174,7 +174,7 @@ namespace OllamaChat
             ChankData cd = await ChankData.GetChankData(mainWindow, outChatData);
             if(cd==null)
             {
-                throw new ArgumentException("ChankData cd  не найдена");
+                return new List<string>();
             }
             List <ChunkInfo> chunks = await cd.GetChanks(mainWindow, outChatData);
 
@@ -184,14 +184,23 @@ namespace OllamaChat
                 return new List<string>();
             }
             //это вектор вопроса
-            var queryEmbedding = await GetEmbeddingAsync(query, outChatData);
+            float[] questionEmbedding = null;
+            if (UsMessageCE!=null && query == UsMessageCE.Text && UsMessageCE.Embedding != null)
+            {
+                //уже рассчитана модель зачем нам еще считать
+                questionEmbedding = UsMessageCE.Embedding;
+            }
+            else
+            {
+                questionEmbedding = await GetEmbeddingAsync(query, outChatData);
+            }
             var similarities = new List<(float Score, string Text)>();
 
             
 
             foreach (ChunkInfo chunkInfo in chunks)
             {
-                float score = CosineSimilarity(queryEmbedding, chunkInfo.Embedding);
+                float score = CosineSimilarity(questionEmbedding, chunkInfo.Embedding);
                 similarities.Add((score, chunkInfo.Text));
             }
 

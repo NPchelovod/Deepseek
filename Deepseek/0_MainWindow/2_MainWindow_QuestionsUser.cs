@@ -88,7 +88,7 @@ namespace OllamaChat
             //сохранение данных
 
             // Сохраняем вопрос в папку inbox для администратора
-            string json = JsonSerializer.Serialize(chatData, new JsonSerializerOptions { IncludeFields = true, WriteIndented = true });
+            string json = JsonSerializer.Serialize(chatData, OptionsJson);
 
             if (Directory.Exists(chatData.inboxPath))
             {

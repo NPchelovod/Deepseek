@@ -56,7 +56,7 @@ namespace OllamaChat
 
                 // Шаг 2: Прочитать JSON из файла
                 string json = await File.ReadAllTextAsync(filePath);
-                var incomingChatData = JsonSerializer.Deserialize<ChatData>(json);
+                var incomingChatData = JsonSerializer.Deserialize<ChatData>(json, OptionsJson);
                 if (incomingChatData == null)
                 {
                     // Файл пустой или повреждён – можно переместить в отдельную папку ошибок или удалить
@@ -99,11 +99,7 @@ namespace OllamaChat
                     apvExist=true;
                     chatData.AnswerPromptVector.EndTime = DateTime.Now;
                 }
-                if(chatData.AnswerAndQuestionsPromptVector!=null)
-                {
-                    apvqExist =true;
-                    chatData.AnswerAndQuestionsPromptVector.EndTime = DateTime.Now;
-                }
+                
 
 
                 if (chatData.OnlyUseCommonContext && chatData.UseCommonContext && chatData.AnswerPromptVector != null && chatData.Id == chatData.AnswerPromptVector.Id)
@@ -122,11 +118,16 @@ namespace OllamaChat
                     // История содержит записи вида "User: ..." и "AI: ..."
                    
                     string aiMessage = "";
-                    if (!string.IsNullOrEmpty(aiMessage))
+                    if (aiMessageAnswer!=null)
                     {
                        
                         aiMessage = aiMessageAnswer.GetAnswerText();
-                        if (!string.IsNullOrEmpty(timeAnswer))
+                        if (string.IsNullOrEmpty(aiMessage))
+                        {
+                            aiMessage = "=>Ошибка: Ответа нет в ProcessQuestionUserFileAsync()";
+                        }
+
+                        else if (!string.IsNullOrEmpty(timeAnswer))
                         {
                             aiMessage += $"\n{timeAnswer}";//время овтета
                         }

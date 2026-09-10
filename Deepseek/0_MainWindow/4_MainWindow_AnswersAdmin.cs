@@ -64,19 +64,28 @@ namespace OllamaChat
 
                 // Шаг 2: Прочитать JSON из файла
                 string json = await File.ReadAllTextAsync(filePath);
-                var incomingChatData = JsonSerializer.Deserialize<ChatData>(json);
+                var incomingChatData = JsonSerializer.Deserialize<ChatData>(json, OptionsJson);
                 if (incomingChatData == null)
                 {
                     // Файл пустой или повреждён – можно переместить в отдельную папку ошибок или удалить
                     //File.Delete(filePath);
                     return;
                 }
-
-                // Шаг 3: Сформировать полный промпт с учётом контекста и истории
                 incomingChatData.AnswerPromptVector = null;// на всякий случай
-                incomingChatData.AnswerAndQuestionsPromptVector = null;// на всякий случай
+               
+
+               // Шаг 3: Сформировать полный промпт с учётом контекста и истории
+
 
                 string fullPrompt = await BuildPromptWithHistory(incomingChatData);
+
+                incomingChatData.AnswerPromptVector = new ChatElement()
+                {
+                    Id = incomingChatData.Id,
+                    Text = fullPrompt,
+                    StartTime = DateTime.Now,
+                    Senders = ESenders.AI_Prompt
+                };
 
                 string response = "";
                 if (incomingChatData.OnlyUseCommonContext && incomingChatData.UseCommonContext)
@@ -90,7 +99,6 @@ namespace OllamaChat
 
                     // Шаг 5: Добавить ответ в историю диалога
                     incomingChatData.ConversationHistory.Add(new ChatElement { Text = response, Id= incomingChatData.Id, Senders=ESenders.AI_Chat, StartTime=DateTime.Now });
-                    
                 }
 
                 //incomingChatData.AnswerAndQuestionsPromptVector = new ChatElement()
@@ -104,8 +112,8 @@ namespace OllamaChat
 
                 // Шаг 6: Сохранить обновлённый ChatData в папку ответов
                 string outFilePath = Path.Combine(incomingChatData.outboxPath, incomingChatData.GetFileName);
-                var options = new JsonSerializerOptions { WriteIndented = true };
-                string outJson = JsonSerializer.Serialize(incomingChatData, options);
+                
+                string outJson = JsonSerializer.Serialize(incomingChatData, OptionsJson);
                 await File.WriteAllTextAsync(outFilePath, outJson);
 
                 // Шаг 7: Переместить исходный файл вопроса в архив (или удалить)
@@ -132,11 +140,11 @@ namespace OllamaChat
             }
         }
 
-
+        private ChatElement UsMessageCE;
         private async Task<string> GetQuestions(ChatData outChatData)//последний ответ пользователя
         {
             int MaxPastAnswers = outChatData.LastMessageInQuestion;
-            ChatElement UsMessageCE = outChatData.ConversationHistory.Where(x => x.Id == outChatData.Id && x.Senders == ESenders.User).LastOrDefault();
+            UsMessageCE = outChatData.ConversationHistory.Where(x => x.Id == outChatData.Id && x.Senders == ESenders.User).LastOrDefault();
             string question = "";
             if (UsMessageCE != null)
             {
@@ -148,9 +156,10 @@ namespace OllamaChat
             }
 
             //иначе возвращаем имбединг модели
-            float[] questionEmbedding=null;
-            if (outChatData.UseCommonContext)
+            float[] questionEmbedding = null;
+            if (outChatData.UseOnlyRelevantHistoryInVopros || outChatData.UseCommonContext)//все равно надо будет имбединг иметь
             {
+                
                 //заполняем косинусовое сходство
                 questionEmbedding = await GetEmbeddingAsync(question, outChatData); // ваш метод
                 UsMessageCE.Embedding = questionEmbedding;
@@ -169,20 +178,27 @@ namespace OllamaChat
             // Идём от предпоследнего сообщения назад
             for (int i = list.Count - 2; i >= 0; i--)
             {
+
                 var item = list[i];
+                if (item.Senders != ESenders.User && outChatData.UseOnlyYourQuestionInHistory)
+                {
+                    continue;
+                }
                 if (currentSimvols >= maxSimvols) break;
 
                 float[] msgEmbedding = item.Embedding;
-                if (msgEmbedding == null && outChatData.UseCommonContext)
+                if (msgEmbedding == null && outChatData.UseOnlyRelevantHistoryInVopros && questionEmbedding!=null)
                 {
                     msgEmbedding = await GetEmbeddingAsync(item.Text, outChatData);
                     item.Embedding = msgEmbedding; // кэшируем
+                    double similarity = CosineSimilarity(questionEmbedding, msgEmbedding);
+                    if (similarity < threshold)
+                    {
+                        continue; // пропускаем нерелевантные
+                    }
                 }
 
-                double similarity = CosineSimilarity(questionEmbedding, msgEmbedding);
-                if (similarity < threshold) continue; // пропускаем нерелевантные
-
-                string text = item.GetAnswerText();
+                string text = item.Text;
                 if (currentSimvols + text.Length > maxSimvols)
                 {
                     // Можно обрезать или остановиться

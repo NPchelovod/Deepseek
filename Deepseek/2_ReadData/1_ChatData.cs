@@ -108,7 +108,7 @@ namespace Deepseek
        
         public ChatElement AnswerPromptVector = null; // ответ промежуточной ИИ на вопрос
 
-        public ChatElement AnswerAndQuestionsPromptVector = null;// ответ промежуточной ИИ на вопрос + ответ ИИ чата и весь контекст одним словом
+        //public ChatElement AnswerAndQuestionsPromptVector = null;// ответ промежуточной ИИ на вопрос + ответ ИИ чата и весь контекст одним словом
         
         public ChatElement _errors { get; set; } = null;
         public ChatElement Errors
@@ -179,7 +179,7 @@ namespace Deepseek
             ConversationHistory.Clear();
             Errors = null;
             AnswerPromptVector = null;
-            AnswerAndQuestionsPromptVector = null;
+            //AnswerAndQuestionsPromptVector = null;
         }
     }
 

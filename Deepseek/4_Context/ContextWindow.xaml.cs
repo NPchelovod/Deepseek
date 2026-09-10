@@ -48,18 +48,24 @@ namespace Deepseek
         private string GetAnswer(bool allPromptAndQ=false)
         {
             ChatElement chatElement = null;
+            ChatElement aiMessageAnswer = _mainWindow.chatData.ConversationHistory.Where(x => x.Id == _mainWindow.chatData.Id && x.Senders == ESenders.AI_Chat).LastOrDefault();
             if (!allPromptAndQ) 
             {
                 chatElement = _mainWindow.chatData.AnswerPromptVector;
             }
             else
             {
-                chatElement = _mainWindow.chatData.AnswerAndQuestionsPromptVector;
+                chatElement = _mainWindow.chatData.AnswerPromptVector;
+                
             }
                
             if (chatElement != null)
             {
                 string answer = _mainWindow.chatData.AnswerPromptVector.GetAnswerText();
+                if(allPromptAndQ && aiMessageAnswer!=null)
+                {
+                    answer += "\n" + aiMessageAnswer.GetAnswerText();
+                }
                 answer += "\n" + _mainWindow.chatData.AnswerPromptVector.GetTime;
                 
                 return answer;
