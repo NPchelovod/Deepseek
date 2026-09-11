@@ -1,6 +1,7 @@
 ﻿using OllamaChat;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -53,6 +54,8 @@ namespace Deepseek
             WordsCountMaxChankContextTextBox.Text = ((int)_mainWindow.chatData.WordContextMax).ToString();
             WordsCountMaxTextBox.Text = ((int)_mainWindow.chatData.WordVoprosMax).ToString();
 
+
+            CosinusSim.Text = _mainWindow.chatData.minCoSimilaryty.ToString();
             CalcToken(false);
 
         }
@@ -148,6 +151,10 @@ namespace Deepseek
             {
                 _mainWindow.chatData.WordVoprosMax = val3;
             }
+            if (!string.IsNullOrEmpty(CosinusSim.Text) && double.TryParse(CosinusSim.Text, NumberStyles.Float, CultureInfo.CurrentCulture, out double val5))
+            {
+                _mainWindow.chatData.minCoSimilaryty = val5;
+            }
 
             CalcToken(false);
 
@@ -195,12 +202,36 @@ namespace Deepseek
             {
                 int.TryParse(WordsCountMaxChankContextTextBox.Text, out int val);
                 int.TryParse(WordsCountMaxTextBox.Text, out int val2);
-                AllTokens.Text = "=>Всего токенов "  +(int)((val+val2)*ChatData._wordToToken) + " не превысь возможность ИИ-чата!";
+                AllTokens.Text = "=>Всего токенов "  +(int)((val+val2)*ChatData._wordToToken) + " не превысь возможность ИИ-чата! (обычно до 5000)";
             }
             else
             {
-                AllTokens.Text = "=>Всего токенов " + (int)(_mainWindow.chatData.AllTokensWords)+" не превысь возможность ИИ-чата!";
+                AllTokens.Text = "=>Всего токенов " + (int)(_mainWindow.chatData.AllTokensWords)+ " не превысь возможность ИИ-чата! (обычно до 5000)";
             }
+        }
+
+        private void OnCosinusSim(object sender, RoutedEventArgs e)
+        {
+            double val = 0;
+            bool ch=false;
+            if(!string.IsNullOrEmpty(CosinusSim.Text) && double.TryParse(CosinusSim.Text, NumberStyles.Float, CultureInfo.CurrentCulture, out  val))
+            {
+                if(val>1)
+                {
+                    val = 1;
+                    ch = true;
+                }
+                else if(val<0)
+                {
+                    val=0;
+                    ch = true;
+                }
+            }
+            if (ch)
+            {
+                CosinusSim.Text = val.ToString();
+            }
+           
         }
     }
 }

@@ -19,6 +19,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
 		</Grid.RowDefinitions>
 		<Grid.ColumnDefinitions>
@@ -124,9 +125,20 @@ HorizontalAlignment="Left" Width="80"/>
         <TextBlock Grid.Row="13" Grid.ColumnSpan="3" Text="=>Всего токенов"  x:Name="AllTokens"
                    ToolTip="Не превышать максимальное кол-во токенов модели ИИ-чата!"
            FontWeight="Bold" Margin="0,0,0,15"/>
-        
+
+
+        <TextBlock Grid.Row="14" Grid.Column="0" Text="Индекс схожести контекста не менее (0...1)" VerticalAlignment="Center" Margin="0,0,10,5"
+  ToolTip="для поиска контекста в документах и вопросах, насколько косинус сходства считать схожим, если 1 то точь в точь, 0 - любой, точнее первые X чанков"/>
+        <TextBox Grid.Row="14" Grid.Column="1" x:Name="CosinusSim"
+                 
+                LostFocus="OnCosinusSim"
+Margin="0,0,5,5"
+VerticalAlignment="Center"
+Text="0.7"
+HorizontalAlignment="Left" Width="80"/>
+
         <!-- Кнопки сохранения/отмены -->
-		<StackPanel Grid.Row="14" Grid.ColumnSpan="3" Orientation="Horizontal"
+		<StackPanel Grid.Row="15" Grid.ColumnSpan="3" Orientation="Horizontal"
                     HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,10,0,0">
 			<Button Content="Сохранить" Width="80" Margin="0,0,10,0" Click="SaveButton_Click"/>
 			<Button Content="Отмена" Width="80" Click="CancelButton_Click"/>

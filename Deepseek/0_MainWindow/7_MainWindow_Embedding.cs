@@ -203,8 +203,9 @@ namespace OllamaChat
                 float score = CosineSimilarity(questionEmbedding, chunkInfo.Embedding);
                 similarities.Add((score, chunkInfo.Text));
             }
-
+            outChatData.CoSimilaryty= similarities.Max(x => x.Score);
             return similarities
+                .Where(s => s.Score >= outChatData.minCoSimilaryty)
                 .OrderByDescending(s => s.Score)
                 .Take(topK)
                 .Select(s => s.Text)
@@ -215,7 +216,7 @@ namespace OllamaChat
 
         public float CosineSimilarity(float[] vec1, float[] vec2)
         {
-            if(vec1==null || vec2 == null) { return 1; }
+            if(vec1==null || vec2 == null) { return 0; }
             if (vec1.Length != vec2.Length)
                 throw new ArgumentException("Vectors must have same length");
 

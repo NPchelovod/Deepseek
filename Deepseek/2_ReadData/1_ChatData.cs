@@ -57,6 +57,9 @@ namespace Deepseek
         public string GetTime =>   $"AI Time {(int)(EndTime - StartTime).TotalSeconds} сек";
 
         public float[] Embedding { get; set; } = null; // можно заполнять при добавлении сообщения, чтобы определять косинусово сходство текущего вопроса
+
+       
+
     }
 
     public class ChatData
@@ -174,6 +177,10 @@ namespace Deepseek
         public int topK { get; set; } = 4;//выборка сообщений
 
         public int LastMessageInQuestion { get; set; } = 20;//сколько последних сообщений в контекст вводить
+
+        public double CoSimilaryty { get; set; } = 0;//косинусово сходство вопроса
+
+        public double minCoSimilaryty { get; set; } = 0.3;
         public void Clear()
         {
             ConversationHistory.Clear();

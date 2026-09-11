@@ -246,11 +246,11 @@ namespace OllamaChat
                 if (string.IsNullOrEmpty(context))
                 {
 
-                    context = GetContextFileData(outChatData);
+                    context = "Контекста нет, он не релевантен"; //GetContextFileData(outChatData);
                 }
 
                 // Вы можете настроить N в зависимости от модели и её контекстного окна.
-                    int maxContextLength = outChatData.SimvolsVoprosMax;
+                    int maxContextLength = outChatData.SimvolsContextMax;
                 context = context.Length > maxContextLength
                     ? context.Substring(0, maxContextLength)
                     : context;
